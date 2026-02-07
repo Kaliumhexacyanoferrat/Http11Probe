@@ -20,18 +20,13 @@ layout: hextra-home
 {{< /hextra/hero-subtitle >}}
 </div>
 
-<div class="hx-mb-6" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-{{< hextra/hero-button text="View Results" link="probe-results" >}}
-{{< hextra/hero-button text="Add Your Framework" link="https://github.com/MDA2AV/Http11Probe#adding-a-server" style="secondary" >}}
-</div>
-
-<div class="hx-mt-16"></div>
+<div class="hx-mt-24"></div>
 
 ## What It Does
 
 Http11Probe sends a suite of crafted HTTP requests to each server and checks whether the response matches the exact expected behavior from the RFCs. Every server is tested identically, producing a side-by-side compliance comparison.
 
-<div class="hx-mt-6"></div>
+<div class="hx-mt-12"></div>
 
 {{< cards >}}
   {{< card link="compliance" title="Compliance" subtitle="RFC 9110/9112 protocol requirements — line endings, request-line format, header syntax, Host validation, Content-Length parsing." icon="check-circle" >}}
@@ -39,25 +34,25 @@ Http11Probe sends a suite of crafted HTTP requests to each server and checks whe
   {{< card link="malformed-input" title="Robustness" subtitle="Binary garbage, oversized fields, too many headers, control characters, integer overflow, incomplete requests." icon="lightning-bolt" >}}
 {{< /cards >}}
 
-<div class="hx-mt-16"></div>
+<div class="hx-mt-24"></div>
 
 ## Add Your Framework
 
 Http11Probe is designed so anyone can contribute their HTTP server and get compliance results without touching the test infrastructure.
 
-<div class="hx-mt-8"></div>
+<div class="hx-mt-12"></div>
 
 **1. Write a minimal server** — Create a directory under `src/Servers/YourServer/` with a simple HTTP server that returns `200 OK` on `GET /`. Any language, any framework.
 
-<div class="hx-mt-4"></div>
+<div class="hx-mt-8"></div>
 
 **2. Add a Dockerfile** — Build and run your server. It will use `network_mode: host` so it binds directly to the host network.
 
-<div class="hx-mt-4"></div>
+<div class="hx-mt-8"></div>
 
 **3. Add to docker-compose.yml** — Add a service entry with two labels. That's the only configuration needed:
 
-<div class="hx-mt-4"></div>
+<div class="hx-mt-8"></div>
 
 ```yaml
 yourserver:
@@ -70,17 +65,17 @@ yourserver:
     probe.name: "Your Server"
 ```
 
-<div class="hx-mt-6"></div>
+<div class="hx-mt-12"></div>
 
 The CI pipeline auto-discovers servers from `docker-compose.yml` labels. No workflow edits, no test changes, no config files. Open a PR and the probe runs automatically.
 
-<div class="hx-mt-16"></div>
+<div class="hx-mt-24"></div>
 
 ## Currently Tested
 
 Servers across C#, Python, JavaScript, Java, Rust, and C — from application frameworks to reverse proxies.
 
-<div class="hx-mt-6"></div>
+<div class="hx-mt-12"></div>
 
 {{< cards >}}
   {{< card link="probe-results" title="Leaderboard" subtitle="See which frameworks pass the most tests, ranked from best to worst compliance." icon="chart-bar" >}}
