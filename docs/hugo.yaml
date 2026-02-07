@@ -1,0 +1,40 @@
+baseURL: https://MDA2AV.github.io/Http11Probe/
+languageCode: en-us
+title: Http11Probe
+
+module:
+  imports:
+    - path: github.com/imfing/hextra
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false
+
+menu:
+  main:
+    - name: Probe Results
+      pageRef: /probe-results
+      weight: 1
+    - name: Search
+      weight: 2
+      params:
+        type: search
+    - name: GitHub
+      weight: 3
+      url: https://github.com/MDA2AV/Http11Probe
+      params:
+        icon: github
+
+params:
+  navbar:
+    displayTitle: true
+    displayLogo: false
+  footer:
+    displayCopyright: false
+    displayPoweredBy: true
+  editURL:
+    enable: true
+    base: https://github.com/MDA2AV/Http11Probe/edit/main/docs/content

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Http11Probe.Cli/Http11Probe.Cli.csproj" />
+    <Project Path="src/Http11Probe/Http11Probe.csproj" />
+  </Folder>
+</Solution>
