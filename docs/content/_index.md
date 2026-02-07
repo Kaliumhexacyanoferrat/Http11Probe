@@ -28,9 +28,9 @@ layout: hextra-home
 
 <div style="height:60px"></div>
 
-## What It Does
+<h2 style="font-size:2rem;font-weight:800;">What It Does</h2>
 
-<p style="font-size:1.25rem;font-weight:700;line-height:1.6;">Http11Probe sends a suite of crafted HTTP requests to each server and checks whether the response matches the exact expected behavior from the RFCs. Every server is tested identically, producing a side-by-side compliance comparison.</p>
+Http11Probe sends a suite of crafted HTTP requests to each server and checks whether the response matches the exact expected behavior from the RFCs. Every server is tested identically, producing a side-by-side compliance comparison.
 
 <div style="height:20px"></div>
 
