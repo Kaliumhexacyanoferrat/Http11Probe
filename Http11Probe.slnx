@@ -5,6 +5,7 @@
   </Folder>
   <Folder Name="/src/Servers/">
     <Project Path="src/Servers/AspNetMinimal/AspNetMinimal.csproj" />
+    <Project Path="src/Servers/GlyphServer/GlyphServer.csproj" />
     <Project Path="src/Servers/NancyServer/NancyServer.csproj" />
   </Folder>
 </Solution>

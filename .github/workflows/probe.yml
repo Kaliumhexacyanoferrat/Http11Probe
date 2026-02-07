@@ -20,14 +20,8 @@ jobs:
 
     steps:
 
-    - name: Checkout Http11Probe
+    - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Checkout Glyph11
-      uses: actions/checkout@v4
-      with:
-        repository: MDA2AV/Glyph11
-        path: Glyph11
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -56,11 +50,8 @@ jobs:
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
 
-    - name: Build Http11Probe
+    - name: Build
       run: dotnet build Http11Probe.slnx -c Release
-
-    - name: Build Glyph11 (GlyphServer only)
-      run: dotnet build Glyph11/src/Glyph11.sln -c Release
 
     - name: Install Flask
       run: pip install flask
@@ -89,7 +80,7 @@ jobs:
 
     - name: Start GlyphServer
       run: |
-        dotnet run --no-build -c Release --project Glyph11/src/Servers/GlyphServer -- 9001 &
+        dotnet run --no-build -c Release --project src/Servers/GlyphServer -- 9001 &
         echo $! > glyph.pid
 
     - name: Start Kestrel (AspNetMinimal)
