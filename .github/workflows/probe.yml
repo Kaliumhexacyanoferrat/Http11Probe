@@ -31,6 +31,7 @@ jobs:
         SERVERS=$(docker compose config --format json | jq -c '
           [.services | to_entries[] |
            select(.value.labels["probe.port"] != null) |
+           select(.key == "glyph") |
            {
              service: .key,
              port:    (.value.labels["probe.port"] | tonumber),
@@ -571,7 +572,8 @@ jobs:
         if git fetch origin latest-results 2>/dev/null; then
           git worktree add /tmp/latest-results origin/latest-results
         else
-          git worktree add --orphan latest-results /tmp/latest-results
+          git worktree add --detach /tmp/latest-results HEAD
+          git -C /tmp/latest-results switch --orphan latest-results
         fi
         mkdir -p /tmp/latest-results/probe
         cp probe-data.js /tmp/latest-results/probe/data.js
