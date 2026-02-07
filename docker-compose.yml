@@ -5,69 +5,105 @@ services:
       context: .
       dockerfile: src/Servers/GlyphServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9001"
+      probe.name: "Glyph11"
 
   kestrel:
     build:
       context: .
       dockerfile: src/Servers/AspNetMinimal/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "5099"
+      probe.name: "Kestrel"
 
   flask:
     build:
       context: .
       dockerfile: src/Servers/FlaskServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9002"
+      probe.name: "Flask"
 
   express:
     build:
       context: .
       dockerfile: src/Servers/ExpressServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9003"
+      probe.name: "Express"
 
   spring:
     build:
       context: .
       dockerfile: src/Servers/SpringBootServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9004"
+      probe.name: "Spring Boot"
 
   quarkus:
     build:
       context: .
       dockerfile: src/Servers/QuarkusServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9005"
+      probe.name: "Quarkus"
 
   nancy:
     build:
       context: .
       dockerfile: src/Servers/NancyServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9006"
+      probe.name: "Nancy"
 
   jetty:
     build:
       context: .
       dockerfile: src/Servers/JettyServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9007"
+      probe.name: "Jetty"
 
   nginx:
     build:
       context: .
       dockerfile: src/Servers/NginxServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9008"
+      probe.name: "Nginx"
 
   apache:
     build:
       context: .
       dockerfile: src/Servers/ApacheServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9009"
+      probe.name: "Apache"
 
   caddy:
     build:
       context: .
       dockerfile: src/Servers/CaddyServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9010"
+      probe.name: "Caddy"
 
   pingora:
     build:
       context: .
       dockerfile: src/Servers/PingoraServer/Dockerfile
     network_mode: host
+    labels:
+      probe.port: "9011"
+      probe.name: "Pingora"
