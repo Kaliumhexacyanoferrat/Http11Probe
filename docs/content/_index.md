@@ -30,7 +30,7 @@ layout: hextra-home
 
 ## What It Does
 
-Http11Probe sends a suite of crafted HTTP requests to each server and checks whether the response matches the exact expected behavior from the RFCs. Every server is tested identically, producing a side-by-side compliance comparison.
+<p style="font-size:1.25rem;font-weight:700;line-height:1.6;">Http11Probe sends a suite of crafted HTTP requests to each server and checks whether the response matches the exact expected behavior from the RFCs. Every server is tested identically, producing a side-by-side compliance comparison.</p>
 
 <div style="height:20px"></div>
 
