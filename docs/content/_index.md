@@ -20,6 +20,12 @@ layout: hextra-home
 {{< /hextra/hero-subtitle >}}
 </div>
 
+<div style="height:20px"></div>
+
+{{< cards >}}
+  {{< card link="probe-results" title="Leaderboard" subtitle="See which frameworks pass the most tests, ranked from best to worst compliance." icon="chart-bar" >}}
+{{< /cards >}}
+
 <div style="height:60px"></div>
 
 ## What It Does
@@ -74,10 +80,3 @@ The CI pipeline auto-discovers servers from `docker-compose.yml` labels. No work
 ## Currently Tested
 
 Servers across C#, Python, JavaScript, Java, Rust, and C — from application frameworks to reverse proxies.
-
-<div style="height:20px"></div>
-
-{{< cards >}}
-  {{< card link="probe-results" title="Leaderboard" subtitle="See which frameworks pass the most tests, ranked from best to worst compliance." icon="chart-bar" >}}
-  {{< card link="glossary" title="Glossary" subtitle="What RFCs are, how smuggling works, and what every test ID means." icon="book-open" >}}
-{{< /cards >}}
