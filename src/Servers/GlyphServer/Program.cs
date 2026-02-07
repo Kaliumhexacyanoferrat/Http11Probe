@@ -44,6 +44,13 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
+                if (filled >= buffer.Length)
+                {
+                    // Buffer full but headers still incomplete — request is too large
+                    await stream.WriteAsync(MakeErrorResponse(431, "Request Header Fields Too Large"), ct);
+                    return;
+                }
+
                 var read = await stream.ReadAsync(buffer.AsMemory(filled), ct);
                 if (read == 0) break;
                 filled += read;
