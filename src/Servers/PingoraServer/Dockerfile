@@ -1,5 +1,5 @@
 FROM rust:1-slim AS build
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y pkg-config libssl-dev cmake g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 
 # Cache dependencies with dummy main
