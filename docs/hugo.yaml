@@ -45,7 +45,7 @@ params:
     displayTitle: true
     displayLogo: true
     logo:
-      link: /
+      link: /Http11Probe/
       light: images/logo.svg
       dark: images/logo.svg
       width: 24
