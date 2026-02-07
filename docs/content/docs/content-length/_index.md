@@ -3,7 +3,7 @@ title: Content-Length
 description: "Content-Length — Http11Probe documentation"
 weight: 6
 sidebar:
-  open: true
+  open: false
 ---
 
 The `Content-Length` header indicates the size of the message body in bytes. Its grammar is strict: `Content-Length = 1*DIGIT`. Any deviation — non-numeric characters, plus signs, leading zeros, negative values, overflow — can cause parsers to disagree on body boundaries.

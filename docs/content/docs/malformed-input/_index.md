@@ -3,7 +3,7 @@ title: Malformed Input
 description: "Malformed Input — Http11Probe documentation"
 weight: 8
 sidebar:
-  open: true
+  open: false
 ---
 
 These tests send pathological, oversized, or completely invalid payloads. The goal is not RFC compliance (there's no RFC section for "what to do with binary garbage") — it's robustness. A well-implemented server should reject gracefully, not crash, hang, or consume unbounded resources.

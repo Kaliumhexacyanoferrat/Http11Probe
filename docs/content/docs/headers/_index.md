@@ -3,7 +3,7 @@ title: Header Syntax
 description: "Header Syntax — Http11Probe documentation"
 weight: 4
 sidebar:
-  open: true
+  open: false
 ---
 
 HTTP header fields follow a strict grammar: `field-name ":" OWS field-value OWS`. RFC 9112 Section 5 and RFC 9110 Section 5.6.2 define what constitutes a valid header. Violations can lead to parser disagreements and smuggling.

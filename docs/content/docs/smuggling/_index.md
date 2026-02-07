@@ -3,7 +3,7 @@ title: Request Smuggling
 description: "Request Smuggling — Http11Probe documentation"
 weight: 7
 sidebar:
-  open: true
+  open: false
 ---
 
 HTTP request smuggling exploits disagreements between HTTP processors about where one request ends and the next begins. When two servers parse the same byte stream differently, an attacker can hide a request inside another.

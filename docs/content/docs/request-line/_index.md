@@ -3,7 +3,7 @@ title: Request Line
 description: "Request Line — Http11Probe documentation"
 weight: 3
 sidebar:
-  open: true
+  open: false
 ---
 
 The request-line is the first line of an HTTP request: `method SP request-target SP HTTP-version CRLF`. RFC 9112 Section 3 defines its grammar strictly. Malformed request-lines are a common vector for parser confusion.

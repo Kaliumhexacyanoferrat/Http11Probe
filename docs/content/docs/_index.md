@@ -2,7 +2,7 @@
 title: Glossary
 description: "Glossary — Http11Probe documentation"
 sidebar:
-  open: true
+  open: false
 ---
 
 Reference documentation for every test in Http11Probe, organized by topic. Each page explains the RFC requirement, what the test sends, what response is expected, and why it matters.

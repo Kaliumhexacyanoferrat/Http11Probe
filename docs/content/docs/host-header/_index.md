@@ -3,7 +3,7 @@ title: Host Header
 description: "Host Header — Http11Probe documentation"
 weight: 5
 sidebar:
-  open: true
+  open: false
 ---
 
 The Host header is the only header where RFC 9112 **explicitly mandates a 400 response** for violations. This makes the Host header tests the strictest in the entire suite — close or timeout is NOT acceptable.

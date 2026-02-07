@@ -3,7 +3,7 @@ title: Line Endings
 description: "Line Endings — Http11Probe documentation"
 weight: 2
 sidebar:
-  open: true
+  open: false
 ---
 
 RFC 9112 Section 2.2 defines that HTTP/1.1 messages use **CRLF** (`\r\n`) as the line terminator for the request-line and header fields. Deviations from this — bare LF, bare CR — are framing violations that can lead to request smuggling or parser confusion.
