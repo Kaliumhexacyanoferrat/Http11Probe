@@ -44,7 +44,9 @@ Http11Probe sends a suite of crafted HTTP requests to each server and checks whe
 
 <div style="height:60px"></div>
 
-## Add Your Framework
+<h2 style="font-size:2rem;font-weight:800;">Add Your Framework</h2>
+
+<div style="height:16px"></div>
 
 Http11Probe is designed so anyone can contribute their HTTP server and get compliance results without touching the test infrastructure.
 
