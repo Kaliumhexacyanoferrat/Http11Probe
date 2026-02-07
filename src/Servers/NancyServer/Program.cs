@@ -2,7 +2,7 @@ using Nancy;
 using Nancy.Hosting.Self;
 
 var port = args.Length > 0 ? args[0] : "9006";
-var uri = new Uri($"http://localhost:{port}");
+var uri = new Uri($"http://0.0.0.0:{port}");
 
 var config = new HostConfiguration { RewriteLocalhost = false };
 
