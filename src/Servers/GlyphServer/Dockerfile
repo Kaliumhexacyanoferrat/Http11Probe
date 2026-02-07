@@ -8,4 +8,4 @@ RUN dotnet publish src/Servers/GlyphServer/GlyphServer.csproj -c Release -o /app
 FROM mcr.microsoft.com/dotnet/runtime:10.0
 WORKDIR /app
 COPY --from=build /app .
-ENTRYPOINT ["dotnet", "GlyphServer.dll", "9001"]
+ENTRYPOINT ["dotnet", "GlyphServer.dll", "8080"]

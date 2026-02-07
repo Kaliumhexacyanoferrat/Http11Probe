@@ -8,4 +8,4 @@ RUN dotnet publish src/Servers/NancyServer/NancyServer.csproj -c Release -o /app
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 WORKDIR /app
 COPY --from=build /app .
-ENTRYPOINT ["dotnet", "NancyServer.dll", "9006"]
+ENTRYPOINT ["dotnet", "NancyServer.dll", "8080"]

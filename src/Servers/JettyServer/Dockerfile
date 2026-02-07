@@ -8,4 +8,4 @@ RUN mvn package -q -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /src/target/jetty-server-1.0.0.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar", "9007"]
+ENTRYPOINT ["java", "-jar", "app.jar", "8080"]

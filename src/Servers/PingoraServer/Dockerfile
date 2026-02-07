@@ -12,4 +12,4 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
 COPY --from=build /src/target/release/pingora-server /usr/local/bin/
-ENTRYPOINT ["pingora-server", "9011"]
+ENTRYPOINT ["pingora-server", "8080"]

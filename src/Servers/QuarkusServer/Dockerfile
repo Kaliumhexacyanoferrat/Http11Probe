@@ -8,4 +8,4 @@ RUN mvn package -q -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /src/target/quarkus-app/ quarkus-app/
-ENTRYPOINT ["java", "-Dquarkus.http.port=9005", "-jar", "quarkus-app/quarkus-run.jar"]
+ENTRYPOINT ["java", "-Dquarkus.http.port=8080", "-jar", "quarkus-app/quarkus-run.jar"]

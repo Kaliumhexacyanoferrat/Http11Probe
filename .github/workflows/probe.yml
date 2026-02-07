@@ -28,29 +28,22 @@ jobs:
     - name: Discover servers
       id: discover
       run: |
-        SERVERS=$(docker compose config --format json | jq -c '
-          [.services | to_entries[] |
-           select(.value.labels["probe.port"] != null) |
-           {
-             service: .key,
-             port:    (.value.labels["probe.port"] | tonumber),
-             name:    .value.labels["probe.name"],
-             dir:     (.value.build.dockerfile | capture("src/Servers/(?<d>[^/]+)/Dockerfile").d)
-           }
-          ] | sort_by(.port)')
+        SERVERS='[]'
+        for f in src/Servers/*/probe.json; do
+          dir=$(basename "$(dirname "$f")")
+          name=$(jq -r .name "$f")
+          SERVERS=$(echo "$SERVERS" | jq -c --arg d "$dir" --arg n "$name" '. + [{"dir": $d, "name": $n}]')
+        done
         echo "servers=$SERVERS" >> "$GITHUB_OUTPUT"
-        ALL_SERVICES=$(echo "$SERVERS" | jq -r '.[].service' | tr '\n' ' ' | sed 's/ $//')
-        echo "all_services=$ALL_SERVICES" >> "$GITHUB_OUTPUT"
-        echo "Discovered: $ALL_SERVICES"
+        echo "Discovered: $(echo "$SERVERS" | jq -r '.[].name' | tr '\n' ', ')"
 
     - name: Detect changes
       id: changes
       run: |
         SERVERS='${{ steps.discover.outputs.servers }}'
-        ALL_SERVICES="${{ steps.discover.outputs.all_services }}"
 
         set_all() {
-          echo "affected=$ALL_SERVICES" >> "$GITHUB_OUTPUT"
+          echo "servers=$SERVERS" >> "$GITHUB_OUTPUT"
         }
 
         # workflow_dispatch always runs everything
@@ -62,94 +55,78 @@ jobs:
         CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
         # Global triggers → run all
-        if echo "$CHANGED" | grep -qE '^(src/Http11Probe/|src/Http11Probe\.Cli/|Directory\.Build\.props|docker-compose\.yml|\.dockerignore|\.github/workflows/probe\.yml)'; then
+        if echo "$CHANGED" | grep -qE '^(src/Http11Probe/|src/Http11Probe\.Cli/|Directory\.Build\.props|\.dockerignore|\.github/workflows/probe\.yml)'; then
           set_all
           exit 0
         fi
 
-        AFFECTED=""
+        AFFECTED='[]'
         for row in $(echo "$SERVERS" | jq -r '.[] | @base64'); do
-          svc=$(echo "$row" | base64 -d | jq -r '.service')
           dir=$(echo "$row" | base64 -d | jq -r '.dir')
+          name=$(echo "$row" | base64 -d | jq -r '.name')
           if echo "$CHANGED" | grep -q "^src/Servers/${dir}/"; then
-            AFFECTED="$AFFECTED $svc"
+            AFFECTED=$(echo "$AFFECTED" | jq -c --arg d "$dir" --arg n "$name" '. + [{"dir": $d, "name": $n}]')
           fi
         done
 
-        echo "affected=${AFFECTED# }" >> "$GITHUB_OUTPUT"
+        echo "servers=$AFFECTED" >> "$GITHUB_OUTPUT"
 
     - name: Setup .NET
-      if: steps.changes.outputs.affected != ''
+      if: steps.changes.outputs.servers != '[]'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0'
 
     - name: Build probe CLI
-      if: steps.changes.outputs.affected != ''
+      if: steps.changes.outputs.servers != '[]'
       run: dotnet build Http11Probe.slnx -c Release
 
-    # ── Start only affected servers via Docker Compose ──────────────
-
-    - name: Start servers
-      if: steps.changes.outputs.affected != ''
-      run: docker compose up -d --build ${{ steps.changes.outputs.affected }}
-
-    - name: Wait for servers
-      if: steps.changes.outputs.affected != ''
-      run: |
-        SERVERS='${{ steps.discover.outputs.servers }}'
-        for svc in ${{ steps.changes.outputs.affected }}; do
-          port=$(echo "$SERVERS" | jq -r --arg s "$svc" '.[] | select(.service == $s) | .port')
-          for i in $(seq 1 30); do
-            if curl -sf "http://localhost:${port}/" > /dev/null 2>&1; then
-              echo "$svc ready on port $port"; break
-            fi
-            sleep 1
-          done
-          if [ "$i" = "30" ]; then
-            echo "::warning::$svc did not start in time (port $port)"
-          fi
-        done
-
-    - name: Verify servers
-      if: steps.changes.outputs.affected != ''
-      run: |
-        SERVERS='${{ steps.discover.outputs.servers }}'
-        echo "── Listening ports ──"
-        ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || true
-        echo "── Health checks ──"
-        for svc in ${{ steps.changes.outputs.affected }}; do
-          port=$(echo "$SERVERS" | jq -r --arg s "$svc" '.[] | select(.service == $s) | .port')
-          curl -sf "http://localhost:${port}/" && echo " $svc OK (port $port)" || echo " $svc FAIL (port $port)"
-        done
-
-    # ── Run probe against each affected server ─────────────────────
+    # ── Build / Run / Probe / Kill — one server at a time ──────────
 
     - name: Probe servers
-      if: steps.changes.outputs.affected != ''
+      if: steps.changes.outputs.servers != '[]'
       run: |
-        SERVERS='${{ steps.discover.outputs.servers }}'
-        for svc in ${{ steps.changes.outputs.affected }}; do
-          port=$(echo "$SERVERS" | jq -r --arg s "$svc" '.[] | select(.service == $s) | .port')
-          name=$(echo "$SERVERS" | jq -r --arg s "$svc" '.[] | select(.service == $s) | .name')
-          echo "::group::Probing $name ($svc) on port $port"
+        SERVERS='${{ steps.changes.outputs.servers }}'
+        PROBE_PORT=8080
+
+        for row in $(echo "$SERVERS" | jq -r '.[] | @base64'); do
+          dir=$(echo "$row" | base64 -d | jq -r '.dir')
+          name=$(echo "$row" | base64 -d | jq -r '.name')
+
+          echo "::group::$name"
+
+          # Build
+          docker build -t "probe-$dir" -f "src/Servers/$dir/Dockerfile" .
+
+          # Run
+          docker run -d --name probe-target --network host "probe-$dir"
+
+          # Wait
+          for i in $(seq 1 30); do
+            curl -sf "http://localhost:${PROBE_PORT}/" > /dev/null 2>&1 && break
+            sleep 1
+          done
+
+          # Probe
           dotnet run --no-build -c Release --project src/Http11Probe.Cli -- \
-            --host localhost --port "$port" --output "probe-${svc}.json" || true
+            --host localhost --port "$PROBE_PORT" --output "probe-${dir}.json" || true
+
+          # Kill
+          docker stop probe-target && docker rm probe-target
+
           echo "::endgroup::"
         done
 
-    # ── Stop all servers ───────────────────────────────────────────
-
-    - name: Stop servers
+    - name: Cleanup
       if: always()
-      run: docker compose down
+      run: docker rm -f probe-target 2>/dev/null || true
 
     # ── Process results ────────────────────────────────────────────
 
     - name: Process results
-      if: steps.changes.outputs.affected != ''
+      if: steps.changes.outputs.servers != '[]'
       env:
-        PROBE_SERVERS: ${{ steps.discover.outputs.servers }}
+        PROBE_SERVERS: ${{ steps.changes.outputs.servers }}
       run: |
         python3 << 'PYEOF'
         import json, sys, os, subprocess, pathlib
@@ -447,7 +424,7 @@ jobs:
 
         # ── Process each server ──────────────────────────────────────
         servers_config = json.loads(os.environ['PROBE_SERVERS'])
-        SERVERS = [(s['name'], f"probe-{s['service']}.json") for s in servers_config]
+        SERVERS = [(s['name'], f"probe-{s['dir']}.json") for s in servers_config]
 
         commit_id   = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
         commit_msg  = subprocess.check_output(['git', 'log', '-1', '--format=%s']).decode().strip()
@@ -555,7 +532,7 @@ jobs:
         path: probe-*.json
 
     - name: Comment on PR
-      if: github.event_name == 'pull_request' && steps.changes.outputs.affected != ''
+      if: github.event_name == 'pull_request' && steps.changes.outputs.servers != '[]'
       run: |
         COMMENT_ID=$(gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
           --jq '.[] | select(.body | contains("<!-- http11probe-results -->")) | .id' | head -1)
