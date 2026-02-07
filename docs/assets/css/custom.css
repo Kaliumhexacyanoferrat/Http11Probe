@@ -1,11 +1,13 @@
 /* Probe Results — primary nav item */
-nav.hextra-max-navbar-width a[href*="/probe-results/"] {
-  font-weight: 700;
+a[href$="/probe-results"],
+a[href$="/probe-results/"] {
+  font-weight: 700 !important;
 }
 
 /* Separator before Glossary */
-nav.hextra-max-navbar-width a[href*="/glossary/"] {
-  margin-left: 12px;
-  padding-left: 14px;
-  border-left: 1px solid rgba(128, 128, 128, 0.3);
+a[href$="/glossary"],
+a[href$="/glossary/"] {
+  margin-left: 12px !important;
+  padding-left: 14px !important;
+  border-left: 1px solid rgba(128, 128, 128, 0.3) !important;
 }
