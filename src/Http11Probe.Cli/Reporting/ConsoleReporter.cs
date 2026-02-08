@@ -5,75 +5,18 @@ namespace Http11Probe.Cli.Reporting;
 
 public static class ConsoleReporter
 {
-    public static void Print(TestRunReport report)
+    public static void PrintHeader()
     {
-        var scored = report.Results.Where(r => r.TestCase.Scored && r.Verdict is TestVerdict.Pass or TestVerdict.Fail or TestVerdict.Error).ToList();
-        var unscored = report.Results.Where(r => !r.TestCase.Scored || r.Verdict == TestVerdict.Warn).ToList();
-
         Console.WriteLine();
         Console.WriteLine("  {0,-35} {1,-10} {2,-6} {3}", "Test ID", "Verdict", "Status", "Details");
         Console.WriteLine("  " + new string('─', 80));
-
-        foreach (var result in scored)
-            PrintRow(result);
-
-        if (unscored.Count > 0)
-        {
-            Console.WriteLine();
-            var prev = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("  ┄┄ Not scored ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄");
-            Console.ForegroundColor = prev;
-
-            foreach (var result in unscored)
-                PrintRow(result);
-        }
-
-        Console.WriteLine("  " + new string('─', 80));
-        Console.WriteLine();
-
-        // Score = pass + fail only (warnings are informational, not scored)
-        var scoredCount = report.PassCount + report.FailCount;
-        var prev2 = Console.ForegroundColor;
-        Console.Write("  Score: ");
-        Console.ForegroundColor = report.FailCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
-        Console.Write($"{report.PassCount}/{scoredCount}");
-        Console.ForegroundColor = prev2;
-
-        if (report.FailCount > 0)
-        {
-            Console.Write(" (");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write($"{report.FailCount} failed");
-            Console.ForegroundColor = prev2;
-            Console.Write(")");
-        }
-
-        if (report.WarnCount > 0)
-        {
-            Console.Write("  ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{report.WarnCount} warnings");
-            Console.ForegroundColor = prev2;
-        }
-
-        if (report.ErrorCount > 0)
-        {
-            Console.Write("  ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write($"{report.ErrorCount} errors");
-            Console.ForegroundColor = prev2;
-        }
-
-        if (report.SkipCount > 0)
-            Console.Write($"  {report.SkipCount} skipped");
-
-        Console.WriteLine($"  ({report.TotalDuration.TotalSeconds:F1}s)");
-        Console.WriteLine();
     }
 
-    private static void PrintRow(TestResult result)
+    public static void PrintRow(TestResult result)
     {
+        if (result.Verdict == TestVerdict.Skip)
+            return;
+
         var (color, symbol) = result.Verdict switch
         {
             TestVerdict.Pass => (ConsoleColor.Green, "PASS"),
@@ -99,5 +42,50 @@ public static class ConsoleReporter
         Console.Write("  {0,-35} {1,-10}", result.TestCase.Id, symbol);
         Console.ForegroundColor = prev;
         Console.WriteLine(" {0,-6} {1}", statusStr, detail);
+    }
+
+    public static void PrintSummary(TestRunReport report)
+    {
+        Console.WriteLine("  " + new string('─', 80));
+        Console.WriteLine();
+
+        var scoredCount = report.PassCount + report.FailCount;
+        var prev = Console.ForegroundColor;
+        Console.Write("  Score: ");
+        Console.ForegroundColor = report.FailCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
+        Console.Write($"{report.PassCount}/{scoredCount}");
+        Console.ForegroundColor = prev;
+
+        if (report.FailCount > 0)
+        {
+            Console.Write(" (");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"{report.FailCount} failed");
+            Console.ForegroundColor = prev;
+            Console.Write(")");
+        }
+
+        if (report.WarnCount > 0)
+        {
+            Console.Write("  ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"{report.WarnCount} warnings");
+            Console.ForegroundColor = prev;
+        }
+
+        if (report.ErrorCount > 0)
+        {
+            Console.Write("  ");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.Write($"{report.ErrorCount} errors");
+            Console.ForegroundColor = prev;
+        }
+
+        if (report.SkipCount > 0)
+            Console.Write($"  {report.SkipCount} skipped");
+
+        var total = report.Results.Count - report.SkipCount;
+        Console.WriteLine($"  ({total} tests, {report.TotalDuration.TotalSeconds:F1}s)");
+        Console.WriteLine();
     }
 }

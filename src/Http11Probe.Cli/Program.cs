@@ -52,9 +52,10 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
         .ToList();
 
     var runner = new TestRunner(options);
-    var report = await runner.RunAsync(testCases);
 
-    ConsoleReporter.Print(report);
+    ConsoleReporter.PrintHeader();
+    var report = await runner.RunAsync(testCases, ConsoleReporter.PrintRow);
+    ConsoleReporter.PrintSummary(report);
 
     if (outputPath is not null)
     {

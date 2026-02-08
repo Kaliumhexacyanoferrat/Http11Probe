@@ -14,7 +14,7 @@ public sealed class TestRunner
         _options = options;
     }
 
-    public async Task<TestRunReport> RunAsync(IEnumerable<TestCase> testCases)
+    public async Task<TestRunReport> RunAsync(IEnumerable<TestCase> testCases, Action<TestResult>? onResult = null)
     {
         var results = new List<TestResult>();
         var totalSw = Stopwatch.StartNew();
@@ -29,17 +29,20 @@ public sealed class TestRunner
         {
             if (_options.CategoryFilter.HasValue && testCase.Category != _options.CategoryFilter.Value)
             {
-                results.Add(new TestResult
+                var skip = new TestResult
                 {
                     TestCase = testCase,
                     Verdict = TestVerdict.Skip,
                     ConnectionState = ConnectionState.Open,
                     Duration = TimeSpan.Zero
-                });
+                };
+                results.Add(skip);
                 continue;
             }
 
-            results.Add(await RunSingleAsync(testCase, context));
+            var result = await RunSingleAsync(testCase, context);
+            results.Add(result);
+            onResult?.Invoke(result);
         }
 
         totalSw.Stop();
