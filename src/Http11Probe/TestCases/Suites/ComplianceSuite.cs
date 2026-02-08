@@ -823,6 +823,246 @@ public static class ComplianceSuite
                 }
             }
         };
+
+        // ── New compliance tests ─────────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-HOST-EMPTY-VALUE",
+            Description = "Empty Host header value must be rejected",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §3.2",
+            PayloadFactory = ctx => MakeRequest("GET / HTTP/1.1\r\nHost: \r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-REQUEST-LINE-TAB",
+            Description = "Tab as request-line delimiter — SHOULD reject but MAY parse on whitespace",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §3",
+            PayloadFactory = ctx => MakeRequest($"GET\t/ HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-VERSION-MISSING-MINOR",
+            Description = "HTTP/1 with no minor version digit is invalid",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §2.3",
+            PayloadFactory = ctx => MakeRequest($"GET / HTTP/1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-VERSION-LEADING-ZEROS",
+            Description = "HTTP/01.01 — leading zeros in version digits are invalid",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §2.3",
+            PayloadFactory = ctx => MakeRequest($"GET / HTTP/01.01\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-VERSION-WHITESPACE",
+            Description = "HTTP/ 1.1 — whitespace inside version token is invalid",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §2.3",
+            PayloadFactory = ctx => MakeRequest($"GET / HTTP/ 1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-CONNECTION-CLOSE",
+            Description = "Server must close connection after responding to Connection: close",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §9.3",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: close\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx + close",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-HTTP10-DEFAULT-CLOSE",
+            Description = "HTTP/1.0 without keep-alive — server should close connection after response",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §9.3",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.0\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx + close",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-HTTP10-NO-HOST",
+            Description = "HTTP/1.0 without Host header — valid per HTTP/1.0",
+            Category = TestCategory.Compliance,
+            Scored = false,
+            RfcReference = "RFC 9112 §3.2",
+            PayloadFactory = _ => MakeRequest("GET / HTTP/1.0\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "200 or 400",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-CONNECT-ORIGIN-FORM",
+            Description = "CONNECT with origin-form target (/path) must be rejected — CONNECT requires authority-form",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §3.2.3",
+            PayloadFactory = ctx => MakeRequest(
+                $"CONNECT /path HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-HTTP12-VERSION",
+            Description = "HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible",
+            Category = TestCategory.Compliance,
+            Scored = false,
+            RfcReference = "RFC 9112 §2.3",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.2\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "200 or 505",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300 or 505)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-TRACE-WITH-BODY",
+            Description = "TRACE with Content-Length body should be rejected",
+            Category = TestCategory.Compliance,
+            Scored = false,
+            RfcReference = "RFC 9110 §9.3.8",
+            PayloadFactory = ctx => MakeRequest(
+                $"TRACE / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400/405 or 200",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is 400 or 405 or 501)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-CHUNKED-TRAILER-VALID",
+            Description = "Valid chunked body with trailer field should be accepted",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §7.1.2",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nX-Checksum: abc\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Range(200, 299)
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-CHUNKED-HEX-UPPERCASE",
+            Description = "Chunk size with uppercase hex (A = 10) should be accepted",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §7.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\nA\r\nhelloworld\r\n0\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Range(200, 299)
+            }
+        };
     }
 
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);

@@ -4,13 +4,13 @@ HTTP/1.1 server compliance and security tester. Sends malformed, ambiguous, and 
 
 **Website:** [mda2av.github.io/Http11Probe](https://MDA2AV.github.io/Http11Probe/) — full documentation, test glossary with RFC citations, and live probe results across all tested servers.
 
-## 116 Tests across 3 Categories
+## 146 Tests across 3 Categories
 
 | Category | Tests | What it covers |
 |----------|------:|----------------|
-| **Compliance** | 47 | RFC 9110/9112 protocol requirements — bare LF, obs-fold, missing Host, invalid versions, chunked encoding, upgrade handling, etc. |
-| **Smuggling** | 50 | CL/TE ambiguity, duplicate Content-Length, pipeline desync, TE obfuscation, chunk extension abuse, bare LF in chunked framing |
-| **Malformed Input** | 19 | Binary garbage, oversized URLs/headers/methods, NUL bytes, control characters, integer overflow, HTTP/2 preface |
+| **Compliance** | 60 | RFC 9110/9112 protocol requirements — bare LF, obs-fold, missing Host, invalid versions, chunked encoding, connection semantics, upgrade handling, etc. |
+| **Smuggling** | 60 | CL/TE ambiguity, duplicate Content-Length, pipeline desync, TE obfuscation, chunk extension abuse, bare LF in chunked framing, URI/Host mismatch |
+| **Malformed Input** | 26 | Binary garbage, oversized URLs/headers/methods, NUL bytes, control characters, integer overflow, overlong UTF-8, encoded CRLF injection |
 
 Each test is scored against RFC normative language (MUST/SHOULD/MAY) and classified as **Pass**, **Fail**, or **Warn** (when the RFC permits both strict and lenient behavior).
 
@@ -57,7 +57,7 @@ dotnet run --project src/Http11Probe.Cli -- --host localhost --port 8080 --outpu
 Results stream to the console as each test completes, with a summary at the end:
 
 ```
-Score: 97/97  19 warnings  (116 tests, 35.5s)
+Score: 97/97  19 warnings  (146 tests, 35.5s)
 ```
 
 ## Building

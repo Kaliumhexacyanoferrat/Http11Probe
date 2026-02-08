@@ -403,6 +403,175 @@ public static class MalformedInputSuite
                 }
             }
         };
+
+        // ── New malformed input tests ────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "MAL-URL-BACKSLASH",
+            Description = "Backslash in URL path — not valid URI character, some servers normalize to /",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx => MakeRequest(
+                $"GET /path\\file HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx/404",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 500)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-URL-OVERLONG-UTF8",
+            Description = "Overlong UTF-8 encoding of / (0xC0 0xAF) in URL must be rejected",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx =>
+            {
+                var before = Encoding.ASCII.GetBytes("GET /");
+                byte[] overlong = [0xC0, 0xAF]; // Overlong UTF-8 for 0x2F (/)
+                var after = Encoding.ASCII.GetBytes($" HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n");
+                var payload = new byte[before.Length + overlong.Length + after.Length];
+                before.CopyTo(payload, 0);
+                overlong.CopyTo(payload, before.Length);
+                after.CopyTo(payload, before.Length + overlong.Length);
+                return payload;
+            },
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-URL-PERCENT-NULL",
+            Description = "Percent-encoded NUL byte (%00) in URL — security risk from null byte injection",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx => MakeRequest(
+                $"GET /path%00.html HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx/404",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 500)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-URL-PERCENT-CRLF",
+            Description = "Percent-encoded CRLF (%0d%0a) in URL — header injection if server decodes during parsing",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx => MakeRequest(
+                $"GET /path%0d%0aX-Injected:%20true HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx/404",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 500)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-CHUNK-EXT-64K",
+            Description = "64KB chunk extension — tests extension length limits (CVE-2023-39326 class)",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx =>
+            {
+                var longExt = new string('a', 65_536);
+                return MakeRequest(
+                    $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5;ext={longExt}\r\nhello\r\n0\r\n\r\n");
+            },
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is 400 or 431)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-RANGE-OVERLAPPING",
+            Description = "1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class)",
+            Category = TestCategory.MalformedInput,
+            Scored = false,
+            PayloadFactory = ctx =>
+            {
+                var ranges = string.Join(",", Enumerable.Range(0, 1000).Select(_ => "0-"));
+                return MakeRequest(
+                    $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nRange: bytes={ranges}\r\n\r\n");
+            },
+            Expected = new ExpectedBehavior
+            {
+                Description = "200/206/400/416",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    // Any of these is acceptable
+                    if (response.StatusCode is 200 or 206 or 400 or 416 or 431)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-POST-CL-HUGE-NO-BODY",
+            Description = "POST with Content-Length: 999999999 but no body — tests timeout vs memory allocation",
+            Category = TestCategory.MalformedInput,
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 999999999\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400/close/timeout",
+                CustomValidator = (response, state) =>
+                {
+                    if (state is ConnectionState.TimedOut or ConnectionState.ClosedByServer)
+                        return TestVerdict.Pass;
+                    if (response is not null && response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
     }
 
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);
