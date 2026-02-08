@@ -18,6 +18,8 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 
 **Fail** — the server gave the wrong response. It either accepted a request it should have rejected, or rejected one it should have accepted.
 
+**Unscored** — tests marked with `*` in the detail tables. These cover RFC language that uses "MAY" or permits multiple valid behaviors, so there is no single correct answer to score against. They are still run and displayed for visibility, but do not count toward the pass/fail score.
+
 {{< callout type="info" >}}
 These results are from CI runs (`ubuntu-latest`). Click on the **Compliance**, **Smuggling**, or **Malformed Input** tabs above for detailed results per category.
 {{< /callout >}}
