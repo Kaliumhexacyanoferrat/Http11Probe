@@ -12,6 +12,12 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 <div id="cat-filter" style="margin-bottom:16px;"></div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
 
+**Pass** — the server gave the correct response. For most tests this means rejecting a malformed request with `400` or closing the connection. For body handling tests it means successfully reading the request body and returning `2xx`.
+
+**Warn** — the server's response is technically valid per the RFC, but a stricter alternative exists. For example, accepting a `GET` request with a body is allowed, but rejecting it is safer because GET-with-body is a known smuggling vector. Warnings appear when the RFC uses "MAY" or "SHOULD" language rather than "MUST", giving the server a choice — the lenient option is compliant but the strict option is more secure.
+
+**Fail** — the server gave the wrong response. It either accepted a request it should have rejected, or rejected one it should have accepted.
+
 {{< callout type="info" >}}
 These results are from CI runs (`ubuntu-latest`). Click on the **Compliance**, **Smuggling**, or **Malformed Input** tabs above for detailed results per category.
 {{< /callout >}}
