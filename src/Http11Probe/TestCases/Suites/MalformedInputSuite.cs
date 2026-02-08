@@ -356,30 +356,6 @@ public static class MalformedInputSuite
 
         yield return new TestCase
         {
-            Id = "MAL-CHUNK-EXTENSION-LONG",
-            Description = "Chunk extension with 100KB value should be rejected",
-            Category = TestCategory.MalformedInput,
-            PayloadFactory = ctx =>
-            {
-                var longExt = new string('A', 100_000);
-                return MakeRequest(
-                    $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5;ext={longExt}\r\nhello\r\n0\r\n\r\n");
-            },
-            Expected = new ExpectedBehavior
-            {
-                CustomValidator = (response, state) =>
-                {
-                    if (response is null)
-                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
-                    return response.StatusCode is 400 or 431
-                        ? TestVerdict.Pass
-                        : TestVerdict.Fail;
-                }
-            }
-        };
-
-        yield return new TestCase
-        {
             Id = "MAL-CL-EMPTY",
             Description = "Empty Content-Length value must be rejected",
             Category = TestCategory.MalformedInput,

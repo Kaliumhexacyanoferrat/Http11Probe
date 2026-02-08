@@ -95,3 +95,13 @@ a[href$="/add-a-framework/"] {
   padding-left: 14px !important;
   border-left: 1px solid rgba(128, 128, 128, 0.3) !important;
 }
+
+/* ── Code blocks: fix dark-mode readability ─────────────────── */
+
+/* The "http" lexer marks all tokens as .err, which carries a light
+   pink background (#e3d2d2) from the default Chroma theme.
+   Override it in dark mode so the block stays dark and text is legible. */
+html.dark .highlight .chroma .err {
+  background-color: transparent !important;
+  color: #e2e8f0 !important;
+}

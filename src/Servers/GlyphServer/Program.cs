@@ -44,80 +44,198 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
-                var result = await reader.ReadAsync(ct);
-                var buffer = result.Buffer;
-
-                if (result.IsCompleted && buffer.IsEmpty)
-                    break;
-
-                var sequence = buffer;
-
-                try
+                // ── Phase 1: parse header ──────────────────────────
+                // Loop until we have a complete header. Do NOT advance
+                // the pipe yet — request holds ReadOnlyMemory slices
+                // into the pipe buffer.
+                ReadOnlySequence<byte> headerBuffer;
+                int headerByteCount;
+                while (true)
                 {
-                    if (!HardenedParser.TryExtractFullHeader(ref sequence, request, in limits, out var bytesRead))
+                    var result = await reader.ReadAsync(ct);
+                    var buffer = result.Buffer;
+
+                    if (result.IsCompleted && buffer.IsEmpty)
                     {
+                        await reader.CompleteAsync();
+                        return;
+                    }
+
+                    var sequence = buffer;
+                    try
+                    {
+                        // TODO FOR SINGLE SEQUENCE THERE ARE NO ALLOCATIONS, FOR MULTI SEGMENT THERE ARE, THAT INTERFERES THE BEHAVIOR
+                        // TODO MEANING WE CANT ADVANCE FOR SINGLE SEGMENT CASE
+                        
+                        if (HardenedParser.TryExtractFullHeader(ref sequence, request, in limits, out var bytesRead))
+                        {
+                            headerByteCount = bytesRead + 1;
+                            headerBuffer = buffer;
+                            break;
+                        }
+
                         if (buffer.Length > limits.MaxTotalHeaderBytes)
                         {
                             reader.AdvanceTo(buffer.End);
                             await stream.WriteAsync(MakeErrorResponse(431, "Request Header Fields Too Large"), ct);
-                            break;
+                            await reader.CompleteAsync();
+                            return;
                         }
 
-                        // Tell the pipe: consumed nothing, examined everything
                         reader.AdvanceTo(buffer.Start, buffer.End);
 
                         if (result.IsCompleted)
-                            break;
-
-                        continue;
+                        {
+                            await reader.CompleteAsync();
+                            return;
+                        }
                     }
-
-                    // Post-parse semantic validation (must happen before AdvanceTo — request
-                    // holds ReadOnlyMemory slices into the pipe's buffer)
-                    if (RequestSemantics.HasTransferEncodingWithContentLength(request) ||
-                        RequestSemantics.HasConflictingContentLength(request) ||
-                        RequestSemantics.HasConflictingCommaSeparatedContentLength(request) ||
-                        RequestSemantics.HasInvalidContentLengthFormat(request) ||
-                        RequestSemantics.HasContentLengthWithLeadingZeros(request) ||
-                        RequestSemantics.HasInvalidHostHeaderCount(request) ||
-                        RequestSemantics.HasInvalidTransferEncoding(request) ||
-                        RequestSemantics.HasDotSegments(request) ||
-                        RequestSemantics.HasFragmentInRequestTarget(request) ||
-                        RequestSemantics.HasBackslashInPath(request) ||
-                        RequestSemantics.HasDoubleEncoding(request) ||
-                        RequestSemantics.HasEncodedNullByte(request) ||
-                        RequestSemantics.HasOverlongUtf8(request))
+                    catch (HttpParseException ex)
                     {
+                        var code = ex.StatusCode;
+                        var reason = code switch
+                        {
+                            431 => "Request Header Fields Too Large",
+                            _ => "Bad Request"
+                        };
                         reader.AdvanceTo(buffer.End);
-                        await stream.WriteAsync(MakeErrorResponse(400, "Bad Request"), ct);
+                        await stream.WriteAsync(MakeErrorResponse(code, reason), ct);
+                        await reader.CompleteAsync();
+                        return;
+                    }
+                }
+
+                // ── Phase 2: semantic validation ───────────────────
+                // request slices still point into the live pipe buffer.
+                if (RequestSemantics.HasTransferEncodingWithContentLength(request) ||
+                    RequestSemantics.HasConflictingContentLength(request) ||
+                    RequestSemantics.HasConflictingCommaSeparatedContentLength(request) ||
+                    RequestSemantics.HasInvalidContentLengthFormat(request) ||
+                    RequestSemantics.HasContentLengthWithLeadingZeros(request) ||
+                    RequestSemantics.HasInvalidHostHeaderCount(request) ||
+                    RequestSemantics.HasInvalidHostFormat(request) ||
+                    RequestSemantics.HasInvalidTransferEncoding(request) ||
+                    RequestSemantics.HasAsteriskFormWithoutOptions(request) ||
+                    RequestSemantics.HasInvalidConnectRequest(request) ||
+                    RequestSemantics.HasDotSegments(request) ||
+                    RequestSemantics.HasFragmentInRequestTarget(request) ||
+                    RequestSemantics.HasBackslashInPath(request) ||
+                    RequestSemantics.HasDoubleEncoding(request) ||
+                    RequestSemantics.HasEncodedNullByte(request) ||
+                    RequestSemantics.HasOverlongUtf8(request))
+                {
+                    reader.AdvanceTo(headerBuffer.End);
+                    await stream.WriteAsync(MakeErrorResponse(400, "Bad Request"), ct);
+                    await reader.CompleteAsync();
+                    return;
+                }
+
+                // ── Phase 3: extract values & detect framing ───────
+                // Copy what we need out of the pipe buffer, then release it.
+                var method = Encoding.ASCII.GetString(request.Method.Span);
+                var path = Encoding.ASCII.GetString(request.Path.Span);
+                var framing = HardenedParser.DetectBodyFraming(request);
+
+                // Now safe to advance past the header bytes.
+                reader.AdvanceTo(headerBuffer.GetPosition(headerByteCount));
+
+                // ── Phase 4: consume body ──────────────────────────
+                switch (framing.Framing)
+                {
+                    case BodyFraming.ContentLength:
+                    {
+                        long remaining = framing.ContentLength;
+                        while (remaining > 0)
+                        {
+                            var result = await reader.ReadAsync(ct);
+                            var buffer = result.Buffer;
+                            long available = Math.Min(buffer.Length, remaining);
+                            remaining -= available;
+                            reader.AdvanceTo(buffer.GetPosition(available));
+
+                            if (result.IsCompleted && remaining > 0)
+                            {
+                                await reader.CompleteAsync();
+                                return;
+                            }
+                        }
                         break;
                     }
 
-                    // Extract strings while buffer is still valid
-                    var method = Encoding.ASCII.GetString(request.Method.Span);
-                    var path = Encoding.ASCII.GetString(request.Path.Span);
+                    case BodyFraming.Chunked:
+                    {
+                        var chunked = new ChunkedBodyStream();
+                        while (true)
+                        {
+                            var result = await reader.ReadAsync(ct);
+                            var buffer = result.Buffer;
 
-                    // Advance past consumed bytes, then respond
-                    reader.AdvanceTo(buffer.GetPosition(bytesRead));
+                            ReadOnlySpan<byte> span;
+                            byte[]? linearized = null;
+                            if (buffer.IsSingleSegment)
+                            {
+                                span = buffer.FirstSpan;
+                            }
+                            else
+                            {
+                                linearized = new byte[buffer.Length];
+                                buffer.CopyTo(linearized);
+                                span = linearized;
+                            }
 
-                    var responseBytes = BuildResponse(method, path);
-                    await stream.WriteAsync(responseBytes, ct);
+                            bool done = false;
+                            int totalConsumed = 0;
+                            while (true)
+                            {
+                                var cr = chunked.TryReadChunk(span[totalConsumed..], out var consumed, out _, out _);
+                                totalConsumed += consumed;
 
-                    request.Clear();
+                                if (cr == ChunkResult.Completed)
+                                {
+                                    done = true;
+                                    break;
+                                }
+                                if (cr == ChunkResult.NeedMoreData)
+                                    break;
+                                // ChunkResult.Chunk — loop to consume next chunk
+                            }
+
+                            reader.AdvanceTo(buffer.GetPosition(totalConsumed));
+
+                            if (done)
+                                break;
+
+                            if (result.IsCompleted)
+                            {
+                                await reader.CompleteAsync();
+                                return;
+                            }
+                        }
+                        break;
+                    }
+
+                    case BodyFraming.None:
+                    default:
+                        break;
                 }
-                catch (HttpParseException ex)
-                {
-                    var (code, reason) = ex.IsLimitViolation
-                        ? (431, "Request Header Fields Too Large")
-                        : (400, "Bad Request");
-                    reader.AdvanceTo(buffer.End);
-                    await stream.WriteAsync(MakeErrorResponse(code, reason), ct);
-                    break;
-                }
+
+                // ── Phase 5: send response ─────────────────────────
+                var responseBytes = BuildResponse(method, path);
+                await stream.WriteAsync(responseBytes, ct);
             }
         }
         catch (OperationCanceledException) { }
         catch (IOException) { }
+        catch (HttpParseException ex)
+        {
+            var code = ex.StatusCode;
+            var reason = code switch
+            {
+                431 => "Request Header Fields Too Large",
+                _ => "Bad Request"
+            };
+            try { await stream.WriteAsync(MakeErrorResponse(code, reason), ct); } catch { }
+        }
         finally
         {
             await reader.CompleteAsync();
