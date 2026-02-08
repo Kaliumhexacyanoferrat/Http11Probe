@@ -345,6 +345,82 @@ window.ProbeRender = (function () {
     });
   }
 
+  // ── Category filter ──────────────────────────────────────────
+  function filterByCategory(data, categories) {
+    return {
+      commit: data.commit,
+      servers: data.servers.map(function (sv) {
+        var filtered = sv.results.filter(function (r) {
+          return categories.indexOf(r.category) !== -1;
+        });
+        var scored = filtered.filter(function (r) { return r.scored !== false; });
+        return {
+          name: sv.name,
+          language: sv.language,
+          results: filtered,
+          summary: {
+            total: filtered.length,
+            scored: scored.length,
+            passed: scored.filter(function (r) { return r.verdict === 'Pass'; }).length,
+            failed: scored.filter(function (r) { return r.verdict === 'Fail'; }).length,
+            warnings: filtered.filter(function (r) { return r.verdict === 'Warn'; }).length,
+            errors: filtered.filter(function (r) { return r.verdict === 'Error'; }).length
+          }
+        };
+      })
+    };
+  }
+
+  function renderCategoryFilter(targetId, onChange) {
+    var el = document.getElementById(targetId);
+    if (!el) return;
+
+    var isDark = document.documentElement.classList.contains('dark');
+    var baseBg = isDark ? '#21262d' : '#f6f8fa';
+    var baseFg = isDark ? '#c9d1d9' : '#24292f';
+    var baseBorder = isDark ? '#30363d' : '#d0d7de';
+    var activeBg = isDark ? '#1f6feb' : '#0969da';
+
+    var btnStyle = 'display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;'
+      + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
+      + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
+
+    var filters = [
+      { label: 'All', categories: null },
+      { label: 'Compliance', categories: ['Compliance', 'Malformed Input'] },
+      { label: 'Smuggling', categories: ['Smuggling'] }
+    ];
+
+    var html = '<div style="margin-bottom:12px;">';
+    filters.forEach(function (f, i) {
+      var isActive = i === 0;
+      html += '<button class="probe-cat-btn" data-idx="' + i + '" style="' + btnStyle
+        + 'background:' + (isActive ? activeBg : baseBg) + ';color:' + (isActive ? '#fff' : baseFg)
+        + ';border-color:' + (isActive ? activeBg : baseBorder) + ';">' + f.label + '</button>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+
+    var buttons = el.querySelectorAll('.probe-cat-btn');
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(btn.getAttribute('data-idx'));
+        buttons.forEach(function (b) {
+          if (b === btn) {
+            b.style.background = activeBg;
+            b.style.color = '#fff';
+            b.style.borderColor = activeBg;
+          } else {
+            b.style.background = baseBg;
+            b.style.color = baseFg;
+            b.style.borderColor = baseBorder;
+          }
+        });
+        onChange(filters[idx].categories);
+      });
+    });
+  }
+
   return {
     pill: pill,
     verdictBg: verdictBg,
@@ -352,6 +428,8 @@ window.ProbeRender = (function () {
     renderSummary: renderSummary,
     renderTable: renderTable,
     renderLanguageFilter: renderLanguageFilter,
+    filterByCategory: filterByCategory,
+    renderCategoryFilter: renderCategoryFilter,
     EXPECT_BG: EXPECT_BG
   };
 })();

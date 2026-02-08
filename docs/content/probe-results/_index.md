@@ -9,6 +9,7 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 ## Summary
 
 <div id="lang-filter"></div>
+<div id="cat-filter"></div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
 
 {{< callout type="info" >}}
@@ -23,9 +24,25 @@ These results are from CI runs (`ubuntu-latest`). Click on the **Compliance**, *
     document.getElementById('probe-summary').innerHTML = '<p><em>No probe data available yet. Run the Probe workflow manually on <code>main</code> to generate results.</em></p>';
     return;
   }
+  var langFiltered = window.PROBE_DATA;
+  var catFilter = null;
+
+  function rerender() {
+    var data = langFiltered;
+    if (catFilter) {
+      data = ProbeRender.filterByCategory(data, catFilter);
+    }
+    ProbeRender.renderSummary('probe-summary', data);
+  }
+
   ProbeRender.renderSummary('probe-summary', window.PROBE_DATA);
   ProbeRender.renderLanguageFilter('lang-filter', window.PROBE_DATA, function (filtered) {
-    ProbeRender.renderSummary('probe-summary', filtered);
+    langFiltered = filtered;
+    rerender();
+  });
+  ProbeRender.renderCategoryFilter('cat-filter', function (categories) {
+    catFilter = categories;
+    rerender();
   });
 })();
 </script>
