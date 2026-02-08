@@ -57,7 +57,8 @@ window.ProbeRender = (function () {
       html += '<div style="display:flex;align-items:center;gap:10px;">';
       html += '<div style="min-width:24px;text-align:right;font-size:13px;font-weight:600;color:#656d76;">' + rank + '</div>';
       html += '<div style="min-width:110px;font-size:13px;font-weight:600;white-space:nowrap;">' + sv.name + '</div>';
-      html += '<div style="flex:1;height:22px;background:#f0f0f0;border-radius:3px;overflow:hidden;position:relative;">';
+      var trackBg = document.documentElement.classList.contains('dark') ? '#2a2f38' : '#f0f0f0';
+      html += '<div style="flex:1;height:22px;background:' + trackBg + ';border-radius:3px;overflow:hidden;position:relative;">';
       html += '<div style="height:100%;width:' + barPct + '%;background:' + bg + ';border-radius:3px;transition:width 0.3s;"></div>';
       html += '</div>';
       html += '<div style="min-width:72px;text-align:right;font-size:13px;font-weight:700;">' + s.passed + '/' + scored + '</div>';
