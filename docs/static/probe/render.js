@@ -165,12 +165,12 @@ window.ProbeRender = (function () {
       return pb - pa || a.name.localeCompare(b.name);
     });
     var maxScored = sorted[0] ? (sorted[0].summary.scored || sorted[0].summary.total) : 1;
-    var topPassed = sorted[0] ? sorted[0].summary.passed : 1;
+    var topPassed = sorted[0] ? (sorted[0].summary.passed || 1) : 1;
 
     var html = '<div style="display:flex;flex-direction:column;gap:6px;max-width:700px;">';
     sorted.forEach(function (sv, i) {
       var s = sv.summary;
-      var scored = s.scored || s.total;
+      var scored = s.scored || s.total || 1;
       var pct = s.passed / scored;
       var barPct = (s.passed / topPassed) * 100;
       var displayPct = Math.round(pct * 100);
@@ -391,7 +391,7 @@ window.ProbeRender = (function () {
       { label: 'All', categories: null },
       { label: 'Compliance', categories: ['Compliance'] },
       { label: 'Smuggling', categories: ['Smuggling'] },
-      { label: 'Malformed Input', categories: ['Malformed Input'] }
+      { label: 'Malformed Input', categories: ['MalformedInput'] }
     ];
 
     var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
