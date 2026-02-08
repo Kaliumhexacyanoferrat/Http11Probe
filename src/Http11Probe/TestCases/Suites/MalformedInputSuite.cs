@@ -21,6 +21,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     // Any of these is acceptable: 400, close, or timeout
@@ -45,6 +46,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400/414/431 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -69,6 +71,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400/431 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -96,6 +99,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400/431 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -146,6 +150,7 @@ public static class MalformedInputSuite
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nX-Test: value"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     // Any of these is acceptable: timeout, close, or 400
@@ -166,6 +171,7 @@ public static class MalformedInputSuite
             PayloadFactory = _ => [],
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     if (state is ConnectionState.TimedOut or ConnectionState.ClosedByServer)
@@ -189,6 +195,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400/431 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -212,6 +219,7 @@ public static class MalformedInputSuite
             },
             Expected = new ExpectedBehavior
             {
+                Description = "400 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -293,6 +301,7 @@ public static class MalformedInputSuite
             PayloadFactory = _ => MakeRequest("   \r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     if (state is ConnectionState.TimedOut or ConnectionState.ClosedByServer)
@@ -343,6 +352,7 @@ public static class MalformedInputSuite
             PayloadFactory = _ => Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/505/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     if (state is ConnectionState.TimedOut or ConnectionState.ClosedByServer)
@@ -379,6 +389,7 @@ public static class MalformedInputSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length:\t5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)

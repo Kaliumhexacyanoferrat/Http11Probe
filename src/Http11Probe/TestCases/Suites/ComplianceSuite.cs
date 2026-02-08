@@ -76,14 +76,24 @@ public static class ComplianceSuite
         yield return new TestCase
         {
             Id = "RFC9112-3-MULTI-SP-REQUEST-LINE",
-            Description = "Multiple spaces between request-line components should be rejected",
+            Description = "Multiple spaces between request-line components — SHOULD reject but MAY parse leniently",
             Category = TestCategory.Compliance,
             RfcReference = "RFC 9112 §3",
             PayloadFactory = ctx => MakeRequest($"GET  / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9112 §3: recipients MAY parse on whitespace-delimited boundaries
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -109,6 +119,7 @@ public static class ComplianceSuite
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/9.9\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/505 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -184,6 +195,7 @@ public static class ComplianceSuite
             PayloadFactory = _ => MakeRequest("GET /\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     if (state is ConnectionState.TimedOut or ConnectionState.ClosedByServer)
@@ -355,6 +367,7 @@ public static class ComplianceSuite
             PayloadFactory = ctx => MakeRequest($"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: gzip\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/501 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -375,14 +388,16 @@ public static class ComplianceSuite
             PayloadFactory = ctx => MakeRequest($"\r\n\r\nGET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is valid — RFC says recipient MAY ignore leading CRLF
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -396,14 +411,16 @@ public static class ComplianceSuite
             PayloadFactory = ctx => MakeRequest($"GET http://{ctx.HostHeader}/ HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is correct — absolute-form is valid
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -417,15 +434,16 @@ public static class ComplianceSuite
             PayloadFactory = ctx => MakeRequest($"get / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/405/501 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
-                    // 400/405/501 is strict — method not recognized
                     if (response.StatusCode is 400 or 405 or 501)
                         return TestVerdict.Pass;
-                    // 2xx means server treats methods case-insensitively
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -500,6 +518,7 @@ public static class ComplianceSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 10\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     // Server should wait for remaining bytes then timeout, or reject
@@ -565,6 +584,7 @@ public static class ComplianceSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/close/timeout",
                 CustomValidator = (response, state) =>
                 {
                     // Server should wait for more chunks then timeout, or reject
@@ -589,6 +609,7 @@ public static class ComplianceSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "!101",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -608,6 +629,7 @@ public static class ComplianceSuite
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "!101",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -627,6 +649,7 @@ public static class ComplianceSuite
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: totally-made-up/1.0\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "!101",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -648,6 +671,7 @@ public static class ComplianceSuite
                 "CONNECT example.com:443 HTTP/1.1\r\nHost: example.com:443\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400/405/501 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -686,6 +710,7 @@ public static class ComplianceSuite
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nExpect: 200-ok\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "417 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -708,10 +733,12 @@ public static class ComplianceSuite
             Description = "GET with Content-Length and body — semantically unusual",
             Category = TestCategory.Compliance,
             RfcReference = "RFC 9110 §9.3.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -734,16 +761,13 @@ public static class ComplianceSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5;ext=value\r\nhello\r\n0\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "2xx or 400",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
-                    // 2xx = server correctly handled chunk extension
-                    if (response.StatusCode is >= 200 and < 300)
+                    if (response.StatusCode is >= 200 and < 300 || response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 400 = server doesn't support extensions — warning
-                    if (response.StatusCode == 400)
-                        return TestVerdict.Warn;
                     return TestVerdict.Fail;
                 }
             }
@@ -759,6 +783,7 @@ public static class ComplianceSuite
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 99\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "426 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -767,8 +792,9 @@ public static class ComplianceSuite
                         return TestVerdict.Fail;
                     if (response.StatusCode == 426)
                         return TestVerdict.Pass;
-                    // Server doesn't support WebSocket — ignores upgrade
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -779,18 +805,21 @@ public static class ComplianceSuite
             Description = "TRACE request — should be disabled in production",
             Category = TestCategory.Compliance,
             RfcReference = "RFC 9110 §9.3.8",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"TRACE / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "405/501 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode is 405 or 501)
                         return TestVerdict.Pass;
-                    // TRACE enabled — works but potential security concern
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };

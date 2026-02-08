@@ -8,9 +8,8 @@ weight: 27
 |---|---|
 | **Test ID** | `SMUG-CHUNK-LF-TERM` |
 | **Category** | Smuggling |
-| **RFC** | [RFC 9112 Section 7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1) |
-| **Requirement** | MUST reject |
-| **Expected** | `400` or close |
+| **RFC** | [RFC 9112 §7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1) |
+| **Expected** | `400` or `2xx` |
 
 ## What it sends
 
@@ -32,9 +31,16 @@ The chunk data `hello` is terminated with bare LF (`\n`) instead of CRLF (`\r\n`
 
 ## What the RFC says
 
-> "Each chunk ends with CRLF." — RFC 9112 Section 7.1
+> "Each chunk ends with CRLF." — RFC 9112 §7.1
 
-The CRLF after chunk data is mandatory. A bare LF violates the chunked transfer coding grammar.
+The CRLF after chunk data is mandatory per the grammar. However, RFC 9112 §2.2 states:
+
+> "Although the line terminator for the start-line and fields is the sequence CRLF, a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR."
+
+This means a server MAY accept bare LF as a line terminator — both strict rejection and lenient acceptance are RFC-compliant.
+
+**Pass:** Server rejects with `400` (strict, safe).
+**Warn:** Server accepts and responds `2xx` (RFC-valid per §2.2 MAY accept bare LF).
 
 ## Why it matters
 
@@ -42,5 +48,5 @@ If one parser accepts bare LF as a chunk data terminator and another requires st
 
 ## Sources
 
-- [RFC 9112 Section 7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1)
-- [RFC 9112 Section 2.2](https://www.rfc-editor.org/rfc/rfc9112#section-2.2)
+- [RFC 9112 §7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1)
+- [RFC 9112 §2.2](https://www.rfc-editor.org/rfc/rfc9112#section-2.2)

@@ -33,6 +33,12 @@ public sealed class StatusCodeRange
         if (_exact.HasValue)
             return _exact.Value.ToString();
 
-        return $"{_rangeStart}-{_rangeEnd}";
+        return (_rangeStart, _rangeEnd) switch
+        {
+            (200, 299) => "2xx",
+            (400, 499) => "4xx",
+            (400, 599) => "4xx/5xx",
+            _ => $"{_rangeStart}-{_rangeEnd}"
+        };
     }
 }

@@ -8,7 +8,7 @@ weight: 16
 |---|---|
 | **Test ID** | `SMUG-TE-NOT-FINAL-CHUNKED` |
 | **Category** | Smuggling |
-| **RFC** | [RFC 9112 Section 7](https://www.rfc-editor.org/rfc/rfc9112#section-7) |
+| **RFC** | [RFC 9112 §6.3](https://www.rfc-editor.org/rfc/rfc9112#section-6.3) |
 | **Requirement** | MUST reject |
 | **Expected** | `400` or close |
 
@@ -28,12 +28,15 @@ Transfer-Encoding: chunked, gzip\r\n
 
 ## What the RFC says
 
-> "If any transfer coding other than chunked is applied to a request payload body, the sender MUST apply chunked as the final transfer coding." — RFC 9112 §7
+> "If a Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding, the message body length cannot be determined reliably; the server MUST respond with the 400 (Bad Request) status code and then close the connection." — RFC 9112 §6.3
+
+This is MUST-level language — servers have no discretion here.
 
 ## Why it matters
 
-If chunked isn't final, the server cannot determine body boundaries. This can be exploited for smuggling.
+If chunked isn't the final encoding, the server cannot determine body boundaries. This can be exploited for smuggling.
 
 ## Sources
 
-- [RFC 9112 Section 7](https://www.rfc-editor.org/rfc/rfc9112#section-7)
+- [RFC 9112 §6.3](https://www.rfc-editor.org/rfc/rfc9112#section-6.3)
+- [RFC 9112 §7](https://www.rfc-editor.org/rfc/rfc9112#section-7)

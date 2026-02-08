@@ -8,9 +8,8 @@ weight: 29
 |---|---|
 | **Test ID** | `SMUG-CHUNK-LF-TRAILER` |
 | **Category** | Smuggling |
-| **RFC** | [RFC 9112 Section 7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1) |
-| **Requirement** | MUST reject |
-| **Expected** | `400` or close |
+| **RFC** | [RFC 9112 §7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1) |
+| **Expected** | `400` or `2xx` |
 
 ## What it sends
 
@@ -32,9 +31,16 @@ The final trailer terminator uses bare LF (`\n`) instead of CRLF (`\r\n`).
 
 ## What the RFC says
 
-> "The trailer section is terminated by an empty line (CRLF)." — RFC 9112 Section 7.1
+> "The trailer section is terminated by an empty line (CRLF)." — RFC 9112 §7.1
 
-The chunked message ends with `last-chunk CRLF trailer-section CRLF`. Both CRLF sequences are mandatory.
+The chunked message ends with `last-chunk CRLF trailer-section CRLF`. Both CRLF sequences are mandatory per the grammar. However, RFC 9112 §2.2 states:
+
+> "Although the line terminator for the start-line and fields is the sequence CRLF, a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR."
+
+This means a server MAY accept bare LF — both strict rejection and lenient acceptance are RFC-compliant.
+
+**Pass:** Server rejects with `400` (strict, safe).
+**Warn:** Server accepts and responds `2xx` (RFC-valid per §2.2 MAY accept bare LF).
 
 ## Why it matters
 
@@ -42,5 +48,5 @@ If a front-end parser accepts bare LF as the end of the chunked body but a back-
 
 ## Sources
 
-- [RFC 9112 Section 7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1)
-- [RFC 9112 Section 2.2](https://www.rfc-editor.org/rfc/rfc9112#section-2.2)
+- [RFC 9112 §7.1](https://www.rfc-editor.org/rfc/rfc9112#section-7.1)
+- [RFC 9112 §2.2](https://www.rfc-editor.org/rfc/rfc9112#section-2.2)

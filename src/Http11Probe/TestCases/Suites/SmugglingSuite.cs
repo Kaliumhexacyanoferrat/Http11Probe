@@ -10,15 +10,25 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-CL-TE-BOTH",
-            Description = "Both Content-Length and Transfer-Encoding present must be rejected",
+            Description = "Both Content-Length and Transfer-Encoding present — server MAY reject or process with TE alone",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9112 §6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 6\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9112 §6.3: server MAY process with TE alone
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -40,15 +50,24 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-CL-LEADING-ZEROS",
-            Description = "Content-Length with leading zeros should be rejected",
+            Description = "Content-Length with leading zeros — valid per 1*DIGIT grammar but may cause parser disagreement",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §8.6",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 005\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -130,6 +149,7 @@ public static class SmugglingSuite
                 Encoding.ASCII.GetBytes($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or close",
                 CustomValidator = (response, state) =>
                 {
                     // Best: server rejects the ambiguous request with 400
@@ -161,6 +181,7 @@ public static class SmugglingSuite
                 Encoding.ASCII.GetBytes($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or close",
                 CustomValidator = (response, state) =>
                 {
                     if (response is not null && response.StatusCode == 400)
@@ -182,14 +203,16 @@ public static class SmugglingSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5 \r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is RFC-compliant (OWS trimming) but worth noting
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -204,14 +227,16 @@ public static class SmugglingSuite
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nX-Test: val\r\nInjected: yes\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is correct — these are two well-formed headers
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -226,13 +251,16 @@ public static class SmugglingSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked, chunked\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -247,14 +275,16 @@ public static class SmugglingSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length:  5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // Extra OWS is technically valid per RFC
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -269,14 +299,16 @@ public static class SmugglingSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: Chunked\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // Case-insensitive matching is valid per RFC
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -301,9 +333,9 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-TE-NOT-FINAL-CHUNKED",
-            Description = "Transfer-Encoding where chunked is not the final encoding must be rejected",
+            Description = "Transfer-Encoding where chunked is not final — server MUST respond with 400 (RFC 9112 §6.3)",
             Category = TestCategory.Smuggling,
-            RfcReference = "RFC 9112 §7",
+            RfcReference = "RFC 9112 §6.3",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked, gzip\r\n\r\n0\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -409,15 +441,25 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-TE-LEADING-COMMA",
-            Description = "Transfer-Encoding with leading comma (, chunked) must be rejected",
+            Description = "Transfer-Encoding with leading comma (, chunked) — RFC says empty list elements MUST be ignored",
             Category = TestCategory.Smuggling,
-            RfcReference = "RFC 9112 §6.1",
+            RfcReference = "RFC 9110 §5.6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: , chunked\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9110 §5.6.1: MUST ignore empty list elements — 2xx is compliant
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -516,7 +558,7 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-CHUNK-EXT-LF",
-            Description = "Bare LF in chunk extension must be rejected (TERM.EXT vector)",
+            Description = "Bare LF in chunk extension — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9112 §7.1.1",
             PayloadFactory = ctx =>
@@ -527,8 +569,18 @@ public static class SmugglingSuite
             },
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9112 §2.2: MAY recognize bare LF as line terminator
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -550,7 +602,7 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-CHUNK-LF-TERM",
-            Description = "Bare LF as chunk data terminator must be rejected",
+            Description = "Bare LF as chunk data terminator — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9112 §7.1",
             PayloadFactory = ctx =>
@@ -561,8 +613,18 @@ public static class SmugglingSuite
             },
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9112 §2.2: MAY recognize bare LF as line terminator
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -690,7 +752,7 @@ public static class SmugglingSuite
         yield return new TestCase
         {
             Id = "SMUG-CHUNK-LF-TRAILER",
-            Description = "Bare LF in chunked trailer section termination must be rejected",
+            Description = "Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9112 §7.1",
             PayloadFactory = ctx =>
@@ -701,8 +763,18 @@ public static class SmugglingSuite
             },
             Expected = new ExpectedBehavior
             {
-                ExpectedStatus = StatusCodeRange.Exact(400),
-                AllowConnectionClose = true
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // RFC 9112 §2.2: MAY recognize bare LF as line terminator
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
             }
         };
 
@@ -744,18 +816,21 @@ public static class SmugglingSuite
             Description = "Transfer_Encoding (underscore) header with CL — not a valid header but some parsers accept",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9112 §6.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer_Encoding: chunked\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is valid — underscore makes it a different header name
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -766,18 +841,21 @@ public static class SmugglingSuite
             Description = "Content-Length with comma-separated identical values — some servers merge",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §8.6",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5, 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx is tolerable — RFC allows merging identical CL values
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -792,13 +870,16 @@ public static class SmugglingSuite
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked;ext=val\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -809,18 +890,21 @@ public static class SmugglingSuite
             Description = "Expect: 100-continue with Content-Length — server should send 100 then read body",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §10.1.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\nExpect: 100-continue\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // 2xx or 100 means server handled Expect properly
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -831,10 +915,12 @@ public static class SmugglingSuite
             Description = "Content-Length in chunked trailers must be ignored — prohibited trailer field",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §6.5.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Length: 50\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -855,10 +941,12 @@ public static class SmugglingSuite
             Description = "Transfer-Encoding in chunked trailers must be ignored — prohibited trailer field",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §6.5.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nTransfer-Encoding: chunked\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -878,10 +966,12 @@ public static class SmugglingSuite
             Description = "Host header in chunked trailers must not be used for routing",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §6.5.2",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nHost: evil.example.com\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -901,10 +991,12 @@ public static class SmugglingSuite
             Description = "Authorization header in chunked trailers — prohibited per RFC 9110 §6.5.1",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §6.5.1",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nAuthorization: Bearer evil\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
@@ -924,18 +1016,21 @@ public static class SmugglingSuite
             Description = "HEAD request with Content-Length and body — server must not leave body on connection",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §9.3.2",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"HEAD / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    // Server responded to HEAD — check that it consumed or closed
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };
@@ -946,17 +1041,21 @@ public static class SmugglingSuite
             Description = "OPTIONS with Content-Length and body — server should consume or reject body",
             Category = TestCategory.Smuggling,
             RfcReference = "RFC 9110 §9.3.7",
+            Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"OPTIONS / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
             Expected = new ExpectedBehavior
             {
+                Description = "400 or 2xx",
                 CustomValidator = (response, state) =>
                 {
                     if (response is null)
                         return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
-                    return TestVerdict.Warn;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
                 }
             }
         };

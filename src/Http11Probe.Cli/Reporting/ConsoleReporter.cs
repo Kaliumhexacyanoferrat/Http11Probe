@@ -7,8 +7,8 @@ public static class ConsoleReporter
 {
     public static void Print(TestRunReport report)
     {
-        var scored = report.Results.Where(r => r.Verdict is TestVerdict.Pass or TestVerdict.Fail or TestVerdict.Error).ToList();
-        var warnings = report.Results.Where(r => r.Verdict == TestVerdict.Warn).ToList();
+        var scored = report.Results.Where(r => r.TestCase.Scored && r.Verdict is TestVerdict.Pass or TestVerdict.Fail or TestVerdict.Error).ToList();
+        var unscored = report.Results.Where(r => !r.TestCase.Scored || r.Verdict == TestVerdict.Warn).ToList();
 
         Console.WriteLine();
         Console.WriteLine("  {0,-35} {1,-10} {2,-6} {3}", "Test ID", "Verdict", "Status", "Details");
@@ -17,15 +17,15 @@ public static class ConsoleReporter
         foreach (var result in scored)
             PrintRow(result);
 
-        if (warnings.Count > 0)
+        if (unscored.Count > 0)
         {
             Console.WriteLine();
             var prev = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("  ┄┄ Not scored (RFC-compliant behavior) ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄");
+            Console.WriteLine("  ┄┄ Not scored ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄");
             Console.ForegroundColor = prev;
 
-            foreach (var result in warnings)
+            foreach (var result in unscored)
                 PrintRow(result);
         }
 

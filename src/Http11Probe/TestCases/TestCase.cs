@@ -10,4 +10,5 @@ public sealed class TestCase
     public Func<TestContext, byte[]>? FollowUpPayloadFactory { get; init; }
     public required ExpectedBehavior Expected { get; init; }
     public bool RequiresConnectionReuse { get; init; }
+    public bool Scored { get; init; } = true;
 }

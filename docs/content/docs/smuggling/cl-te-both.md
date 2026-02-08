@@ -8,9 +8,9 @@ weight: 1
 |---|---|
 | **Test ID** | `RFC9112-6.1-CL-TE-BOTH` |
 | **Category** | Smuggling |
-| **RFC** | [RFC 9112 Section 6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1) |
-| **Requirement** | "ought to" |
-| **Expected** | `400` or close |
+| **RFC** | [RFC 9112 §6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1) |
+| **Requirement** | "ought to" handle as error |
+| **Expected** | `400` or `2xx` |
 
 ## What it sends
 
@@ -31,7 +31,14 @@ Transfer-Encoding: chunked\r\n
 
 > "If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length. Such a message might indicate an attempt to perform request smuggling or response splitting and **ought to** be handled as an error."
 
-The "ought to" language is between SHOULD and MAY.
+The "ought to" language is between SHOULD and MAY. RFC 9112 §6.3 further clarifies:
+
+> "If a Transfer-Encoding header field is present and the chunked transfer coding is the final encoding, the message body length is determined by reading and decoding the chunked data..."
+
+This means a server **MAY** reject the message or process it using Transfer-Encoding alone — both are RFC-compliant.
+
+**Pass:** Server rejects with `400` (strict, safe).
+**Warn:** Server accepts and responds `2xx` (RFC-valid, using TE to determine body length).
 
 ## Why it matters
 
@@ -39,5 +46,5 @@ This is **the** classic request smuggling setup. If the front-end uses Content-L
 
 ## Sources
 
-- [RFC 9112 Section 6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1)
-- [RFC 9110 Section 16.3.1](https://www.rfc-editor.org/rfc/rfc9110#section-16.3.1)
+- [RFC 9112 §6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1)
+- [RFC 9110 §16.3.1](https://www.rfc-editor.org/rfc/rfc9110#section-16.3.1)

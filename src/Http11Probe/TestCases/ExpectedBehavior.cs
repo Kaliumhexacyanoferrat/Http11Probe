@@ -9,6 +9,20 @@ public sealed class ExpectedBehavior
     public ConnectionState? ExpectedConnectionState { get; init; }
     public bool AllowConnectionClose { get; init; }
     public Func<HttpResponse?, ConnectionState, TestVerdict>? CustomValidator { get; init; }
+    public string? Description { get; init; }
+
+    public string GetDescription()
+    {
+        if (Description is not null)
+            return Description;
+
+        var parts = new List<string>();
+        if (ExpectedStatus is not null)
+            parts.Add(ExpectedStatus.ToString());
+        if (AllowConnectionClose)
+            parts.Add("close");
+        return parts.Count > 0 ? string.Join(" or ", parts) : "custom";
+    }
 
     public TestVerdict Evaluate(HttpResponse? response, ConnectionState connectionState)
     {
