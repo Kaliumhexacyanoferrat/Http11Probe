@@ -10,7 +10,7 @@ using Glyph11.Validation;
 
 var port = args.Length > 0 && int.TryParse(args[0], out var p) ? p : 5098;
 
-var listener = new TcpListener(IPAddress.Loopback, port);
+var listener = new TcpListener(IPAddress.Any, port);
 listener.Start();
 
 Console.WriteLine($"GlyphServer listening on http://localhost:{port}");

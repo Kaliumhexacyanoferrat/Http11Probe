@@ -3,7 +3,7 @@ using WatsonWebserver.Core;
 
 var port = args.Length > 0 && int.TryParse(args[0], out var p) ? p : 8080;
 
-var settings = new WebserverSettings("127.0.0.1", port);
+var settings = new WebserverSettings("*", port);
 var server = new Webserver(settings, async ctx =>
 {
     ctx.Response.StatusCode = 200;

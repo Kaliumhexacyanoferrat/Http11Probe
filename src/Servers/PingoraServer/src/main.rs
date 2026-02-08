@@ -49,7 +49,7 @@ fn main() {
     server.bootstrap();
 
     let mut proxy = http_proxy_service(&server.configuration, OkProxy);
-    proxy.add_tcp(&format!("127.0.0.1:{port}"));
+    proxy.add_tcp(&format!("0.0.0.0:{port}"));
     server.add_service(proxy);
 
     server.run_forever();
