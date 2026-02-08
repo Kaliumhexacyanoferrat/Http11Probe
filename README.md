@@ -42,16 +42,23 @@ dotnet run --project src/Http11Probe.Cli -- --host localhost --port 8080
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--host` | Target host | `localhost` |
-| `--port` | Target port | `8080` |
-| `--category` | Filter by category (`Compliance`, `Smuggling`, `MalformedInput`) | all |
-| `--timeout` | Connect/read timeout in seconds | `5` |
-| `--output` | Write JSON report to file | — |
+| `--host` | Target hostname or IP address | `localhost` |
+| `--port` | Target port number | `8080` |
+| `--category` | Run only tests in this category (`Compliance`, `Smuggling`, `MalformedInput`) | all |
+| `--test` | Run only specific test IDs, case-insensitive (repeatable) | all |
+| `--timeout` | Connect and read timeout in seconds per test | `5` |
+| `--output` | Write JSON results to file | — |
 
-### Example
+### Examples
 
 ```
 dotnet run --project src/Http11Probe.Cli -- --host localhost --port 8080 --output results.json
+```
+
+Run specific tests:
+
+```
+dotnet run --project src/Http11Probe.Cli -- --test SMUG-CL-TE-BOTH --test SMUG-DUPLICATE-CL
 ```
 
 Results stream to the console as each test completes, with a summary at the end:

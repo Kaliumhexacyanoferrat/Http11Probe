@@ -4,24 +4,27 @@ using Http11Probe.Runner;
 using Http11Probe.TestCases;
 using Http11Probe.TestCases.Suites;
 
-var hostOption = new Option<string>("--host") { Description = "Target host" };
+var hostOption = new Option<string>("--host") { Description = "Target hostname or IP address" };
 hostOption.DefaultValueFactory = _ => "localhost";
 
-var portOption = new Option<int>("--port") { Description = "Target port" };
+var portOption = new Option<int>("--port") { Description = "Target port number" };
 portOption.DefaultValueFactory = _ => 8080;
 
-var categoryOption = new Option<TestCategory?>("--category") { Description = "Run only tests in this category" };
+var categoryOption = new Option<TestCategory?>("--category") { Description = "Run only tests in this category (skip all others)" };
 
-var timeoutOption = new Option<int>("--timeout") { Description = "Read/connect timeout in seconds" };
+var testOption = new Option<string[]>("--test") { Description = "Run only specific test IDs, case-insensitive (repeatable)", Arity = ArgumentArity.OneOrMore };
+
+var timeoutOption = new Option<int>("--timeout") { Description = "Connect and read timeout in seconds per test" };
 timeoutOption.DefaultValueFactory = _ => 5;
 
-var outputOption = new Option<string?>("--output") { Description = "Write JSON report to this file path" };
+var outputOption = new Option<string?>("--output") { Description = "Write JSON results to this file path" };
 
 var rootCommand = new RootCommand("Http11Probe — HTTP/1.1 server compliance & hardening tester")
 {
     hostOption,
     portOption,
     categoryOption,
+    testOption,
     timeoutOption,
     outputOption
 };
@@ -32,6 +35,7 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     var port = parseResult.GetValue(portOption);
     var category = parseResult.GetValue(categoryOption);
     var timeout = parseResult.GetValue(timeoutOption);
+    var testIds = parseResult.GetValue(testOption);
     var outputPath = parseResult.GetValue(outputOption);
 
     Console.WriteLine($"  Http11Probe targeting {host}:{port}");
@@ -43,7 +47,10 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
         Port = port,
         ConnectTimeout = TimeSpan.FromSeconds(timeout),
         ReadTimeout = TimeSpan.FromSeconds(timeout),
-        CategoryFilter = category
+        CategoryFilter = category,
+        TestIdFilter = testIds is { Length: > 0 }
+            ? new HashSet<string>(testIds, StringComparer.OrdinalIgnoreCase)
+            : null
     };
 
     var testCases = ComplianceSuite.GetTestCases()

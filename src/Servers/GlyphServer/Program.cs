@@ -8,7 +8,7 @@ using Glyph11.Parser.Hardened;
 using Glyph11.Protocol;
 using Glyph11.Validation;
 
-var port = args.Length > 0 && int.TryParse(args[0], out var p) ? p : 5098;
+var port = args.Length > 0 && int.TryParse(args[0], out var p) ? p : 8080;
 
 var listener = new TcpListener(IPAddress.Any, port);
 listener.Start();

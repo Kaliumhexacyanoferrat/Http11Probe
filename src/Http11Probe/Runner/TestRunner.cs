@@ -27,7 +27,8 @@ public sealed class TestRunner
 
         foreach (var testCase in testCases)
         {
-            if (_options.CategoryFilter.HasValue && testCase.Category != _options.CategoryFilter.Value)
+            if (_options.CategoryFilter.HasValue && testCase.Category != _options.CategoryFilter.Value
+                || _options.TestIdFilter is { Count: > 0 } ids && !ids.Contains(testCase.Id))
             {
                 var skip = new TestResult
                 {
