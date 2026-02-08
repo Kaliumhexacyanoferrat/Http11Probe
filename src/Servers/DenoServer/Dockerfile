@@ -1,4 +1,4 @@
-FROM denoland/deno:2
+FROM denoland/deno:latest
 COPY src/Servers/DenoServer/server.ts /app/server.ts
 WORKDIR /app
 RUN deno cache server.ts
