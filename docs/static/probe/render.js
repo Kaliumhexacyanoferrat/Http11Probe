@@ -231,11 +231,26 @@ window.ProbeRender = (function () {
     sorted.forEach(function (sv, i) {
       var s = sv.summary;
       var total = s.total || 1;
-      var warnings = s.warnings || 0;
-      var failed = s.failed || 0;
-      var passPct = ((total - warnings - failed) / total) * 100;
-      var warnPct = (warnings / total) * 100;
-      var failPct = (failed / total) * 100;
+
+      // Compute counts from results — unscored tests are a separate bucket
+      var unscored = 0, scoredPass = 0, scoredWarn = 0, scoredFail = 0;
+      if (sv.results) {
+        sv.results.forEach(function (r) {
+          if (r.scored === false) { unscored++; return; }
+          if (r.verdict === 'Pass') scoredPass++;
+          else if (r.verdict === 'Warn') scoredWarn++;
+          else if (r.verdict === 'Fail') scoredFail++;
+        });
+      } else {
+        scoredPass = s.passed || 0;
+        scoredFail = s.failed || 0;
+        scoredWarn = s.warnings || 0;
+      }
+
+      var passPct = (scoredPass / total) * 100;
+      var warnPct = (scoredWarn / total) * 100;
+      var failPct = (scoredFail / total) * 100;
+      var unscoredPct = (unscored / total) * 100;
       var rank = i + 1;
 
       html += '<div style="display:flex;align-items:center;gap:10px;">';
@@ -246,28 +261,27 @@ window.ProbeRender = (function () {
       var trackBg = document.documentElement.classList.contains('dark') ? '#2a2f38' : '#f0f0f0';
       html += '<div style="flex:1;height:22px;background:' + trackBg + ';border-radius:3px;overflow:hidden;display:flex;">';
       html += '<div style="height:100%;width:' + passPct + '%;background:' + PASS_BG + ';transition:width 0.3s;"></div>';
-      if (warnings > 0) {
+      if (scoredWarn > 0) {
         html += '<div style="height:100%;width:' + warnPct + '%;background:' + WARN_BG + ';transition:width 0.3s;"></div>';
       }
-      if (failed > 0) {
+      if (scoredFail > 0) {
         html += '<div style="height:100%;width:' + failPct + '%;background:' + FAIL_BG + ';transition:width 0.3s;"></div>';
+      }
+      if (unscored > 0) {
+        html += '<div style="height:100%;width:' + unscoredPct + '%;background:' + SKIP_BG + ';transition:width 0.3s;"></div>';
       }
       html += '</div>';
       // Score: pass + warn [fail] [unscored] / total
-      // Unscored excludes warns (already counted in warnings)
-      var unscored = s.unscored != null ? s.unscored
-        : sv.results ? sv.results.filter(function (r) { return r.scored === false && r.verdict !== 'Warn'; }).length
-        : 0;
       html += '<div style="min-width:200px;text-align:right;font-size:13px;">';
-      html += '<span style="font-weight:700;color:' + PASS_BG + ';">' + s.passed + '</span>';
-      if (warnings > 0) {
-        html += ' + <span style="font-weight:700;color:' + WARN_BG + ';">' + warnings + '</span>';
+      html += '<span style="font-weight:700;color:' + PASS_BG + ';">' + scoredPass + '</span>';
+      if (scoredWarn > 0) {
+        html += ' + <span style="font-weight:700;color:' + WARN_BG + ';">' + scoredWarn + '</span>';
       }
-      if (failed > 0) {
-        html += ' <span style="color:' + FAIL_BG + ';">' + failed + ' fail</span>';
+      if (scoredFail > 0) {
+        html += ' <span style="color:' + FAIL_BG + ';">' + scoredFail + ' fail</span>';
       }
       if (unscored > 0) {
-        html += ' <span style="color:#656d76;font-size:11px;">' + unscored + ' unscored</span>';
+        html += ' <span style="color:' + SKIP_BG + ';">' + unscored + ' unscored</span>';
       }
       html += ' <span style="color:#656d76;font-size:12px;">/ ' + total + '</span>';
       html += '</div>';
@@ -500,9 +514,9 @@ window.ProbeRender = (function () {
             scored: scored.length,
             passed: scored.filter(function (r) { return r.verdict === 'Pass'; }).length,
             failed: scored.filter(function (r) { return r.verdict === 'Fail'; }).length,
-            warnings: filtered.filter(function (r) { return r.verdict === 'Warn'; }).length,
-            errors: filtered.filter(function (r) { return r.verdict === 'Error'; }).length,
-            unscored: filtered.filter(function (r) { return r.scored === false && r.verdict !== 'Warn'; }).length
+            warnings: scored.filter(function (r) { return r.verdict === 'Warn'; }).length,
+            errors: scored.filter(function (r) { return r.verdict === 'Error'; }).length,
+            unscored: filtered.filter(function (r) { return r.scored === false; }).length
           }
         };
       })

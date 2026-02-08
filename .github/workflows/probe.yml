@@ -158,13 +158,13 @@ jobs:
                     'durationMs': r.get('durationMs', 0),
                 })
 
-            scored_results = [r for r in results if r['scored'] and r['verdict'] != 'Warn']
-            total  = len(scored_results)
-            passed = sum(1 for r in scored_results if r['verdict'] == 'Pass')
-            warned = sum(1 for r in results if r['verdict'] == 'Warn')
-            unscored = sum(1 for r in results if not r['scored'] and r['verdict'] != 'Warn')
+            scored_results = [r for r in results if r['scored']]
+            scored_pass = sum(1 for r in scored_results if r['verdict'] == 'Pass')
+            scored_fail = sum(1 for r in scored_results if r['verdict'] == 'Fail')
+            scored_warn = sum(1 for r in scored_results if r['verdict'] == 'Warn')
+            unscored = sum(1 for r in results if not r['scored'])
             return {
-                'summary': {'total': len(results), 'scored': total, 'passed': passed, 'failed': total - passed, 'warnings': warned, 'unscored': unscored},
+                'summary': {'total': len(results), 'scored': len(scored_results), 'passed': scored_pass, 'failed': scored_fail, 'warnings': scored_warn, 'unscored': unscored},
                 'results': results,
             }
 
