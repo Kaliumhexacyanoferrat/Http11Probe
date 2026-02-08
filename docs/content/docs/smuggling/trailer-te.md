@@ -16,6 +16,21 @@ weight: 33
 
 A valid chunked request with a `Transfer-Encoding: chunked` header in the trailer section.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello\r\n
+0\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+```
+
+A `Transfer-Encoding: chunked` header appears in the chunked trailers section.
+
+
 ## What the RFC says
 
 > "A sender MUST NOT generate a trailer field unless the sender knows the corresponding header field name's definition permits sending it as a trailer field." — RFC 9110 Section 6.5.1

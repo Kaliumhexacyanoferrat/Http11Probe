@@ -16,6 +16,18 @@ weight: 23
 
 `Transfer-Encoding: , chunked` — leading comma.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: , chunked\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+The Transfer-Encoding value starts with a leading comma before `chunked`.
+
+
 ## What the RFC says
 
 > The list syntax does not allow empty list members (leading comma).

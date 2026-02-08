@@ -16,6 +16,15 @@ weight: 1
 
 A request-line with multiple spaces between components: `GET  /  HTTP/1.1` (double spaces).
 
+```http
+GET  / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+Note the double space between `GET` and `/`.
+
+
 ## What the RFC says
 
 The request-line grammar is `method SP request-target SP HTTP-version CRLF` where `SP` is exactly one space. Multiple spaces do not match this grammar, making the request-line invalid. Recipients SHOULD respond with 400.

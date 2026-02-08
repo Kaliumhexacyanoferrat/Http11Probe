@@ -16,6 +16,14 @@ weight: 1
 
 A valid `GET / HTTP/1.1` request with no `Host` header.
 
+```http
+GET / HTTP/1.1\r\n
+\r\n
+```
+
+No `Host` header at all.
+
+
 ## What the RFC says
 
 > "A server **MUST** respond with a 400 (Bad Request) status code to any HTTP/1.1 request message that lacks a Host header field..."

@@ -14,6 +14,15 @@ weight: 10
 
 A request with non-ASCII bytes in the URL.
 
+```http
+GET /caf\xC3\xA9 HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+The URL `/café` contains UTF-8 encoded `é` (`\xC3\xA9`) — non-ASCII bytes in the request-target.
+
+
 ## What the RFC says
 
 URIs are defined in RFC 3986 as sequences of ASCII characters. Non-ASCII bytes must be percent-encoded.

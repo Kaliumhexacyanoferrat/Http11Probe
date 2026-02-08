@@ -14,6 +14,17 @@ weight: 12
 
 A header value containing CRLF followed by an injected header line — attempting to inject additional headers via a field value.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+X-Test: val\r\n
+Injected: yes\r\n
+\r\n
+```
+
+On the wire this is two well-formed headers. The test checks that the server parses them as separate headers rather than treating the CRLF as part of the `X-Test` value.
+
+
 ## Why it matters
 
 If the server doesn't validate field values for CRLF sequences, an attacker can inject arbitrary headers. This can lead to response splitting, cache poisoning, or session hijacking.

@@ -18,10 +18,13 @@ A request with two `Host` headers containing different values:
 
 ```http
 GET / HTTP/1.1\r\n
-Host: localhost\r\n
-Host: evil.com\r\n
+Host: localhost:8080\r\n
+Host: other.example.com\r\n
 \r\n
 ```
+
+Two `Host` headers with different values.
+
 
 ## What the RFC says
 

@@ -16,6 +16,15 @@ weight: 35
 
 `HEAD / HTTP/1.1` with `Content-Length: 5` and body `hello`. HEAD requests are not supposed to have a response body, but this test sends a request body.
 
+```http
+HEAD / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > "The HEAD method is identical to GET except that the server MUST NOT send content in the response." — RFC 9110 Section 9.3.2

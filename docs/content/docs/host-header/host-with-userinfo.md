@@ -16,6 +16,15 @@ weight: 4
 
 A request with `Host: user@hostname:port`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: user@localhost:8080\r\n
+\r\n
+```
+
+The `Host` header contains a `user@` userinfo prefix.
+
+
 ## What the RFC says
 
 > "A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message that... contains... a Host header field with an invalid field value." — RFC 9112 Section 3.2. The Host header grammar is `uri-host [ ":" port ]` — no userinfo is permitted.

@@ -16,6 +16,15 @@ weight: 36
 
 `OPTIONS / HTTP/1.1` with `Content-Length: 5` and body `hello`.
 
+```http
+OPTIONS / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > "A client that generates an OPTIONS request containing content MUST send a valid Content-Type header field describing the representation media type." — RFC 9110 Section 9.3.7

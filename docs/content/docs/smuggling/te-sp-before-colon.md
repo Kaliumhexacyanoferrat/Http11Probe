@@ -16,6 +16,18 @@ weight: 7
 
 `Transfer-Encoding : chunked` — space before the colon.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding : chunked\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+Note the space between `Transfer-Encoding` and the colon.
+
+
 ## What the RFC says
 
 Same MUST-reject-with-400 rule as SP-BEFORE-COLON. No whitespace allowed between field name and colon.

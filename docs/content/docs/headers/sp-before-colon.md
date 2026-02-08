@@ -16,6 +16,16 @@ weight: 1
 
 A request with a space between the header field name and the colon: `Host : localhost`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+X-Test : value\r\n
+\r\n
+```
+
+Note the space between `X-Test` and the colon.
+
+
 ## What the RFC says
 
 > "No whitespace is allowed between the field name and colon. In the past, differences in the handling of such whitespace have led to security vulnerabilities in request routing and response handling. A server **MUST** reject, with a response status code of 400 (Bad Request), any received request message that contains whitespace between a header field name and colon."

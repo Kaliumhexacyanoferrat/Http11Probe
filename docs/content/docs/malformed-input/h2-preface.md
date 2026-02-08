@@ -14,6 +14,16 @@ weight: 17
 
 The HTTP/2 connection preface (`PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n`) to an HTTP/1.1 server.
 
+```http
+PRI * HTTP/2.0\r\n
+\r\n
+SM\r\n
+\r\n
+```
+
+The HTTP/2 connection preface, sent to an HTTP/1.1 server.
+
+
 ## Why it matters
 
 An HTTP/1.1-only server receiving the H2 preface should recognize it is not a valid HTTP/1.1 request. Parsing it as HTTP/1.1 could lead to unexpected behavior. The server should reject with 400 or 505, close the connection, or timeout.

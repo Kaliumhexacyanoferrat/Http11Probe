@@ -16,6 +16,17 @@ weight: 4
 
 Two leading CRLF sequences before the request-line.
 
+```http
+\r\n
+\r\n
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+Two leading CRLF pairs precede the actual request-line.
+
+
 ## What the RFC says
 
 > "In the interest of robustness, a server that is expecting to receive and parse a request-line SHOULD ignore at least one empty line (CRLF) received prior to the request-line." — RFC 9112 Section 2.2

@@ -16,6 +16,20 @@ weight: 27
 
 A chunked request where the chunk data terminator is a bare `LF` (`\n`) instead of `CRLF` (`\r\n`): `5\r\nhello\n0\r\n\r\n`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello\n
+0\r\n
+\r\n
+```
+
+The chunk data `hello` is terminated with bare LF (`\n`) instead of CRLF (`\r\n`).
+
+
 ## What the RFC says
 
 > "Each chunk ends with CRLF." — RFC 9112 Section 7.1

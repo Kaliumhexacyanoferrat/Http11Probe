@@ -16,6 +16,19 @@ weight: 4
 
 A valid WebSocket upgrade request with `Sec-WebSocket-Version: 99` — a version the server does not support.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Connection: Upgrade\r\n
+Upgrade: websocket\r\n
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n
+Sec-WebSocket-Version: 99\r\n
+\r\n
+```
+
+WebSocket version `99` is not a valid version (only `13` is standard).
+
+
 ## What the RFC says
 
 > "If the requested version is not supported by the server, the server MUST abort the WebSocket handshake... and then send an appropriate HTTP error code (such as 426 Upgrade Required), and a |Sec-WebSocket-Version| header field indicating the version(s) the server is capable of understanding." — RFC 6455 Section 4.4

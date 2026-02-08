@@ -16,6 +16,15 @@ weight: 5
 
 A request with `Host: hostname:port/path`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080/path\r\n
+\r\n
+```
+
+The `Host` header includes a `/path` component.
+
+
 ## What the RFC says
 
 > "A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message that... contains... a Host header field with an invalid field value." — RFC 9112 Section 3.2. The Host header grammar is `uri-host [ ":" port ]` with no path component allowed.

@@ -14,6 +14,16 @@ weight: 13
 
 `Transfer-Encoding: chunked, chunked` — duplicate `chunked` encoding with a Content-Length header also present.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked, chunked\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+
 ## Why it's unscored
 
 The RFC allows multiple Transfer-Encoding values. However, applying `chunked` twice is unusual and may confuse parsers. Both `400` and normal processing are defensible.

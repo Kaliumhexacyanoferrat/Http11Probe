@@ -16,6 +16,15 @@ weight: 11
 
 `CONNECT host: HTTP/1.1` — authority-form with empty port.
 
+```http
+CONNECT localhost: HTTP/1.1\r\n
+Host: localhost:\r\n
+\r\n
+```
+
+The authority-form has a colon but no port number.
+
+
 ## What the RFC says
 
 > "The authority-form of request-target is only used for CONNECT requests... authority = uri-host ":" port" — RFC 9112 Section 3.2.3. An empty port is not a valid port.

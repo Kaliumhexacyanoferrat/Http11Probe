@@ -16,6 +16,14 @@ weight: 4
 
 Negative Content-Length: `Content-Length: -1`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: -1\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 `-` is not a digit. Invalid Content-Length MUST be treated as an unrecoverable error.

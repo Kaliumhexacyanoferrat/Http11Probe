@@ -16,6 +16,14 @@ weight: 1
 
 A request with a non-numeric `Content-Length` value, e.g., `Content-Length: abc`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: abc\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 Content-Length is defined as `1*DIGIT`. A value containing non-digit characters does not match this grammar.

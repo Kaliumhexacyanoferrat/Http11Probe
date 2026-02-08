@@ -16,6 +16,13 @@ weight: 1
 
 A `GET / HTTP/1.1` request where the request-line is terminated with `\n` (bare LF) instead of `\r\n` (CRLF).
 
+```http
+GET / HTTP/1.1\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "Although the line terminator for the start-line and fields is the sequence CRLF, a recipient **MAY** recognize a single LF as a line terminator and ignore any preceding CR."

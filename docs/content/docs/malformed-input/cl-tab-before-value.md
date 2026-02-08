@@ -16,6 +16,17 @@ weight: 20
 
 `Content-Length:\t5` — a Content-Length header where a horizontal tab character separates the colon from the value, instead of a space.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length:\t5\r\n
+\r\n
+hello
+```
+
+A horizontal tab character (`\t` / `0x09`) separates the colon from the value instead of a space.
+
+
 ## What the RFC says
 
 > "OWS = *( SP / HTAB )" — RFC 9110 Section 5.6.3

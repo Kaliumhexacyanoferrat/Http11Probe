@@ -16,6 +16,15 @@ weight: 2
 
 A request with a plus sign in the Content-Length value: `Content-Length: +42`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: +5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 The `+` character is not in the DIGIT set (`%x30-39`), so `+42` does not match `1*DIGIT`. This is an invalid Content-Length and MUST be treated as an unrecoverable error.

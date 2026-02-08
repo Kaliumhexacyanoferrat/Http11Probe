@@ -16,6 +16,18 @@ weight: 33
 
 POST with `Content-Length: 5` and `Expect: 100-continue`, body included immediately.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5\r\n
+Expect: 100-continue\r\n
+\r\n
+hello
+```
+
+The body is sent immediately without waiting for a `100 Continue` response.
+
+
 ## What the RFC says
 
 > "A server that receives a 100-continue expectation in an HTTP/1.1 request MUST send either a 100 (Continue) interim response... or a final status code." — RFC 9110 §10.1.1

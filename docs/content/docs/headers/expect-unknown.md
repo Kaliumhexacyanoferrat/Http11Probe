@@ -16,6 +16,16 @@ weight: 7
 
 `Expect: 200-ok` — an Expect header with a value the server cannot fulfill.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Expect: 200-ok\r\n
+\r\n
+```
+
+The `Expect` header contains an unknown expectation value (not `100-continue`).
+
+
 ## What the RFC says
 
 > "A server that receives an Expect field value containing a member other than 100-continue MAY respond with a 417 (Expectation Failed) status code to indicate that the unexpected expectation cannot be met." — RFC 9110 Section 10.1.1

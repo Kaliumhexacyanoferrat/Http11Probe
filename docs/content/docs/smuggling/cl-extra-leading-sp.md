@@ -14,6 +14,17 @@ weight: 11
 
 `Content-Length:  0` — extra space between colon and value.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length:  5\r\n
+\r\n
+hello
+```
+
+Note the double space after the colon (extra leading OWS).
+
+
 ## Why it's unscored
 
 OWS before the field value is permitted. The server may trim it and process normally.

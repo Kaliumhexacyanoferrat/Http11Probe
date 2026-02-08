@@ -16,6 +16,16 @@ weight: 3
 
 A header line starting with a colon — effectively an empty field name: `: value`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+: empty-name\r\n
+\r\n
+```
+
+A header line starting with `:` — the header name is empty.
+
+
 ## What the RFC says
 
 Field names are defined as `token = 1*tchar`, requiring at least one valid token character. An empty string does not match `1*tchar`. While there is no explicit "MUST reject empty field names with 400" statement, a line starting with `:` fails to match the `field-line` grammar entirely.

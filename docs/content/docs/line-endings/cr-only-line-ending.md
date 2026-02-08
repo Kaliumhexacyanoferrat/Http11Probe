@@ -16,6 +16,14 @@ weight: 3
 
 A request where lines are terminated with `\r` (bare CR) instead of `\r\n` (CRLF).
 
+```http
+GET / HTTP/1.1\rHost: localhost:8080\r\n
+\r\n
+```
+
+The request-line is terminated with bare `\r` (CR only) instead of `\r\n` (CRLF). The `Host:` header starts immediately after the CR.
+
+
 ## What the RFC says
 
 > "A sender **MUST NOT** generate a bare CR (a CR character not immediately followed by LF) within any protocol elements other than the content. A recipient of such a bare CR **MUST** consider that element to be invalid or replace each bare CR with SP before processing the element or forwarding the message."

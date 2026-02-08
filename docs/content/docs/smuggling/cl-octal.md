@@ -16,6 +16,15 @@ weight: 20
 
 `Content-Length: 0o5` — CL with octal prefix.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 0o5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > Content-Length grammar is `1*DIGIT`. The prefix `0o` makes it non-numeric.

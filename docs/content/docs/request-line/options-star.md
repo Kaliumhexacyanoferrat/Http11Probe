@@ -16,6 +16,13 @@ weight: 7
 
 `OPTIONS * HTTP/1.1` — the valid asterisk-form request.
 
+```http
+OPTIONS * HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "The asterisk-form of request-target is only used for a server-wide OPTIONS request." — RFC 9112 Section 3.2.4

@@ -16,6 +16,20 @@ weight: 18
 
 Chunk size `5;` with a semicolon but no extension name.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5;\r\n
+hello\r\n
+0\r\n
+\r\n
+```
+
+The chunk size line `5;` has a semicolon but no extension name after it.
+
+
 ## What the RFC says
 
 > The chunk extension grammar requires `chunk-ext = *( BWS ";" BWS chunk-ext-name [ "=" chunk-ext-val ] )` where chunk-ext-name is a token (1 or more characters).

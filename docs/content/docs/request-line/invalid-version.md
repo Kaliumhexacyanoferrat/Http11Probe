@@ -16,6 +16,13 @@ weight: 4
 
 A request with an unrecognizable HTTP version string, e.g., `GET / HTTP/9.9`.
 
+```http
+GET / HTTP/9.9\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 HTTP-version is defined as `HTTP-name "/" DIGIT "." DIGIT` and is case-sensitive. The 505 (HTTP Version Not Supported) status code is available but the RFC uses SHOULD, not MUST:

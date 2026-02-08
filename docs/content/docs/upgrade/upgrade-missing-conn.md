@@ -16,6 +16,18 @@ weight: 2
 
 A GET request with `Upgrade: websocket` and WebSocket handshake headers, but **without** the required `Connection: Upgrade` header.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Upgrade: websocket\r\n
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n
+Sec-WebSocket-Version: 13\r\n
+\r\n
+```
+
+No `Connection: Upgrade` header — the `Upgrade` header is present alone.
+
+
 ## What the RFC says
 
 > "A client that sends Upgrade in a request also needs to send 'Connection: Upgrade' to prevent Upgrade from being forwarded to an upstream server." — RFC 9110 Section 7.8

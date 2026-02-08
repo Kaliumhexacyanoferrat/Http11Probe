@@ -15,6 +15,15 @@ weight: 3
 
 Content-Length with leading zeros: `Content-Length: 007`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 005\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 While `007` matches `1*DIGIT`, leading zeros create ambiguity. Some parsers may interpret as octal, some as decimal.

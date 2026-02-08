@@ -16,6 +16,13 @@ weight: 6
 
 `GET * HTTP/1.1` — the asterisk-form request-target with a non-OPTIONS method.
 
+```http
+GET * HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "The asterisk-form of request-target is only used for a server-wide OPTIONS request." — RFC 9112 Section 3.2.4

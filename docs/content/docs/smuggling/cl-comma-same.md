@@ -16,6 +16,17 @@ weight: 31
 
 `Content-Length: 5, 5` — comma-separated CL with identical values.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5, 5\r\n
+\r\n
+hello
+```
+
+The Content-Length value `5, 5` has two identical comma-separated values.
+
+
 ## What the RFC says
 
 > "If the different field line values all have the same value... the recipient MAY accept that value." — RFC 9110 §8.6

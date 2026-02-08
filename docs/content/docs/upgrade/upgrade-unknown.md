@@ -16,6 +16,15 @@ weight: 3
 
 A GET request with `Connection: Upgrade` and `Upgrade: totally-made-up/1.0` — a protocol the server cannot possibly support.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Connection: Upgrade\r\n
+Upgrade: totally-made-up/1.0\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "A server MUST NOT switch to a protocol that was not indicated by the client in the corresponding request's Upgrade header field." — RFC 9110 Section 7.8

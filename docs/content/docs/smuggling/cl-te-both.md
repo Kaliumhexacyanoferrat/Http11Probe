@@ -16,6 +16,17 @@ weight: 1
 
 A request with both `Content-Length` and `Transfer-Encoding` headers present.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 6\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+0\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length. Such a message might indicate an attempt to perform request smuggling or response splitting and **ought to** be handled as an error."

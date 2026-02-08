@@ -16,6 +16,14 @@ weight: 2
 
 A valid `GET` request where one of the header lines is terminated with `\n` (bare LF) instead of `\r\n`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\n
+X-Test: value\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 Same rule as for the request-line: the recipient MAY recognize a single LF as a line terminator. Bare LF is a sender violation but recipients are permitted to tolerate it.

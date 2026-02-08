@@ -16,6 +16,14 @@ weight: 8
 
 `Transfer-Encoding: gzip` without any Content-Length — an unknown transfer coding as the only framing.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: gzip\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "A server that receives a request message with a transfer coding it does not understand SHOULD respond with 501 (Not Implemented)." — RFC 9112 Section 6.1

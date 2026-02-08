@@ -14,6 +14,18 @@ weight: 6
 
 `Transfer-Encoding: chunked ` (with a trailing space). The value does not exactly match `chunked`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked \r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+Note the trailing space after `chunked`.
+
+
 ## Why it matters
 
 If one parser trims whitespace and recognizes `chunked` while another treats `chunked ` as an unknown encoding, they'll disagree on body framing.

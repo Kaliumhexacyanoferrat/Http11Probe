@@ -14,6 +14,16 @@ weight: 5
 
 `Transfer-Encoding: xchunked` with a Content-Length header. The TE value `xchunked` is not a recognized encoding.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: xchunked\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+
 ## Why it matters
 
 If the front-end ignores the unknown TE and uses CL, but the back-end strips the `x` and processes it as `chunked`, a smuggling vector exists. Some real-world proxies have exhibited this exact behavior.

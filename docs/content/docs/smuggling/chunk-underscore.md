@@ -16,6 +16,20 @@ weight: 21
 
 Chunk size `1_0` — with underscore separator.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+1_0\r\n
+hello world!!!!!\r\n
+0\r\n
+\r\n
+```
+
+The chunk size `1_0` uses an underscore separator (like numeric literals in some languages).
+
+
 ## What the RFC says
 
 > Chunk size is `1*HEXDIG`. Underscores are not hex digits.

@@ -16,6 +16,15 @@ weight: 2
 
 A request-line with no request-target: `GET  HTTP/1.1` (method directly followed by version, no URI).
 
+```http
+GET HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+The request-target (path) is missing — `GET` is followed directly by the version string with no path in between.
+
+
 ## What the RFC says
 
 The request-target is a required component of the request-line grammar. Without it, the line is invalid. Recipients SHOULD respond with 400.

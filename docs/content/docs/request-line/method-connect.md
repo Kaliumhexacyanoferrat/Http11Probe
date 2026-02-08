@@ -16,6 +16,13 @@ weight: 12
 
 `CONNECT example.com:443 HTTP/1.1` — a CONNECT request sent directly to an origin server (not a proxy).
 
+```http
+CONNECT example.com:443 HTTP/1.1\r\n
+Host: example.com:443\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "CONNECT is intended only for use in requests to a proxy... A server that does not act as a tunnel for the requested host and port, or which chooses not to open a TCP connection, MUST respond with an appropriate error status code." — RFC 9110 Section 9.3.6

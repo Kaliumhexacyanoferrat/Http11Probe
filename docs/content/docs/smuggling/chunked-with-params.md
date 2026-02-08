@@ -16,6 +16,18 @@ weight: 32
 
 `Transfer-Encoding: chunked;ext=val` — parameters on the chunked coding.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked;ext=val\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+The `chunked` encoding name has parameters appended (`;ext=val`).
+
+
 ## What the RFC says
 
 > Transfer coding parameters are not defined for `chunked` but the grammar technically allows them.

@@ -16,6 +16,16 @@ weight: 3
 
 A request with two identical Host headers.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+Two `Host` headers with identical values.
+
+
 ## What the RFC says
 
 > "A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message that... contains more than one Host header field line..." — RFC 9112 Section 3.2

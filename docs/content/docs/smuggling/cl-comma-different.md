@@ -16,6 +16,15 @@ weight: 15
 
 `Content-Length: 5, 10` — comma-separated CL with different values.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5, 10\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > "If a message is received without Transfer-Encoding and with either multiple Content-Length header fields having differing field-line values or a single Content-Length header field having an invalid value, then the message framing is invalid and the recipient MUST treat it as an unrecoverable error." — RFC 9112 §6.3

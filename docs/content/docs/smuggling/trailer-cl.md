@@ -16,6 +16,21 @@ weight: 32
 
 A valid chunked request with a `Content-Length: 50` header in the trailer section (after the last chunk).
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello\r\n
+0\r\n
+Content-Length: 50\r\n
+\r\n
+```
+
+A `Content-Length: 50` header appears in the chunked trailers section.
+
+
 ## What the RFC says
 
 > "A sender MUST NOT generate a trailer field unless the sender knows the corresponding header field name's definition permits sending it as a trailer field." — RFC 9110 Section 6.5.1

@@ -16,6 +16,20 @@ weight: 25
 
 Chunk size `0x5` — with C-style hex prefix.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+0x5\r\n
+hello\r\n
+0\r\n
+\r\n
+```
+
+The chunk size uses a `0x` hex prefix.
+
+
 ## What the RFC says
 
 > Chunk size is `1*HEXDIG` — no prefix notation allowed.

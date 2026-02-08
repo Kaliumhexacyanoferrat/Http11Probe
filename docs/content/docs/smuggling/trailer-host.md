@@ -16,6 +16,21 @@ weight: 34
 
 A valid chunked request with `Host: evil.example.com` in the trailer section, while the actual Host header in the request points to the real server.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello\r\n
+0\r\n
+Host: evil.example.com\r\n
+\r\n
+```
+
+A `Host: evil.example.com` header appears in the chunked trailers section.
+
+
 ## What the RFC says
 
 > "Field names that define constraints on the message framing or that could alter the semantics of the message content... MUST NOT be generated as a trailer field." — RFC 9110 Section 6.5.2

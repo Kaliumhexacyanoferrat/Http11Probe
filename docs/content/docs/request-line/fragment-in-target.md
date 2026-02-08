@@ -16,6 +16,13 @@ weight: 3
 
 A request with a fragment identifier in the URI: `GET /path#fragment HTTP/1.1`.
 
+```http
+GET /path#frag HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 The origin-form of request-target is `absolute-path [ "?" query ]`. There is no fragment component. A fragment identifier (`#...`) does not appear in any valid request-target form.

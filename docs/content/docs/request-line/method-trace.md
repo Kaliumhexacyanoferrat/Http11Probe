@@ -16,6 +16,13 @@ weight: 14
 
 `TRACE / HTTP/1.1` — a standard TRACE request.
 
+```http
+TRACE / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "A client MUST NOT generate header fields in a TRACE request containing sensitive data... A server SHOULD exclude any request header fields received in that request message from the response body..." — RFC 9110 Section 9.3.8

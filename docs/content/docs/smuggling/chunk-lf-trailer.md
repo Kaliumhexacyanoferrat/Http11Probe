@@ -16,6 +16,20 @@ weight: 29
 
 A chunked request where the final trailer section terminator uses bare `LF` instead of `CRLF`: `0\r\n\n` instead of `0\r\n\r\n`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello\r\n
+0\r\n
+\n
+```
+
+The final trailer terminator uses bare LF (`\n`) instead of CRLF (`\r\n`).
+
+
 ## What the RFC says
 
 > "The trailer section is terminated by an empty line (CRLF)." — RFC 9112 Section 7.1

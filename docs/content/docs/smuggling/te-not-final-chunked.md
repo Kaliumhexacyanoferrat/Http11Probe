@@ -16,6 +16,16 @@ weight: 16
 
 `Transfer-Encoding: chunked, gzip` — chunked is not the final encoding.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked, gzip\r\n
+\r\n
+0\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "If any transfer coding other than chunked is applied to a request payload body, the sender MUST apply chunked as the final transfer coding." — RFC 9112 §7

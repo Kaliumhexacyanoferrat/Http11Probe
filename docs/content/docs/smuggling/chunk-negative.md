@@ -16,6 +16,20 @@ weight: 31
 
 A chunked request with a negative chunk size: `-1\r\nhello\r\n0\r\n\r\n`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+-1\r\n
+hello\r\n
+0\r\n
+\r\n
+```
+
+The chunk size `-1` is negative.
+
+
 ## What the RFC says
 
 > "chunk-size = 1*HEXDIG" — RFC 9112 Section 7.1

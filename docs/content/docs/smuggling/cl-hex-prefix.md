@@ -16,6 +16,15 @@ weight: 26
 
 `Content-Length: 0x5` — CL with hex prefix.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 0x5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > Content-Length grammar is `1*DIGIT`. Hex notation is not valid.

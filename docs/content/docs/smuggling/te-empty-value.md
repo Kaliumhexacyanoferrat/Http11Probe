@@ -16,6 +16,18 @@ weight: 22
 
 `Transfer-Encoding: ` (empty value) with `Content-Length: 5`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: \r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+The `Transfer-Encoding` header has an empty value.
+
+
 ## What the RFC says
 
 > Transfer-Encoding must contain at least one valid transfer coding.

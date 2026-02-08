@@ -16,6 +16,18 @@ weight: 30
 
 `Transfer_Encoding: chunked` (underscore instead of hyphen) with `Content-Length: 5`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer_Encoding: chunked\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+Note `Transfer_Encoding` with an underscore instead of a hyphen.
+
+
 ## What the RFC says
 
 > Header names are tokens. `Transfer_Encoding` is a valid token but not the `Transfer-Encoding` header.

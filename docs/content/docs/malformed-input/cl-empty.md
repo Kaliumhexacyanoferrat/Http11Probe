@@ -16,6 +16,16 @@ weight: 19
 
 `Content-Length: ` — a Content-Length header with an empty value (just whitespace after the colon).
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: \r\n
+\r\n
+```
+
+The Content-Length header has an empty value (no digits).
+
+
 ## What the RFC says
 
 > "Content-Length = 1*DIGIT" — RFC 9110 Section 8.6

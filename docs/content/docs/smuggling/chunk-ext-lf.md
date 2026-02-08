@@ -16,6 +16,20 @@ weight: 25
 
 A chunked request where the chunk extension area contains a bare `LF` instead of `CRLF`: `5;\nhello`.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5;\n
+hello\r\n
+0\r\n
+\r\n
+```
+
+The chunk size line `5;` is terminated with bare LF (`\n`) instead of CRLF.
+
+
 ## What the RFC says
 
 Chunk extensions must follow the grammar `chunk-ext = *( BWS ";" BWS chunk-ext-name [ "=" chunk-ext-val ] )` with CRLF terminating the chunk line. A bare LF in the extension area violates the line terminator requirement of RFC 9112 Section 2.2.

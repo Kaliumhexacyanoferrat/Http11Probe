@@ -16,6 +16,15 @@ weight: 10
 
 `get / HTTP/1.1` — lowercase method name.
 
+```http
+get / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+The method `get` is lowercase instead of the standard `GET`.
+
+
 ## What the RFC says
 
 > "The method token is case-sensitive because it might be used as a gateway to object-based systems with case-sensitive method names." — RFC 9110 Section 9.1

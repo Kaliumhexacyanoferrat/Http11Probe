@@ -16,6 +16,20 @@ weight: 28
 
 Chunk size ` 5` — with leading space.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+ 5\r\n
+hello\r\n
+0\r\n
+\r\n
+```
+
+The chunk size ` 5` has a leading space.
+
+
 ## What the RFC says
 
 > Chunk size is `1*HEXDIG` with no leading whitespace.

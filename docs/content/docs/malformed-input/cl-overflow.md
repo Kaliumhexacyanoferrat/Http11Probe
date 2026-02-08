@@ -14,6 +14,16 @@ weight: 11
 
 A `Content-Length` value exceeding the 64-bit integer range (e.g., `99999999999999999999`).
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 99999999999999999999\r\n
+\r\n
+```
+
+The Content-Length value exceeds 64-bit integer range.
+
+
 ## Why it matters
 
 If a parser uses a fixed-width integer without overflow checking, the parsed value wraps around. This can lead to reading a different amount of body data than intended -- a smuggling vector.

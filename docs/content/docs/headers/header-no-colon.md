@@ -16,6 +16,16 @@ weight: 5
 
 A header line with no colon: `InvalidHeaderNoColon`.
 
+```http
+GET / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+NoColonHere\r\n
+\r\n
+```
+
+A header line without any colon separator.
+
+
 ## What the RFC says
 
 The field-line grammar is `field-name ":" OWS field-value OWS`. A line without a colon does not match this grammar. It could be misinterpreted as a continuation line, a new request, or garbage — any of which is dangerous.

@@ -16,6 +16,16 @@ weight: 2
 
 Two `Content-Length` headers with different values.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 5\r\n
+Content-Length: 10\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > "If a message is received without Transfer-Encoding and with either multiple Content-Length header field values... the recipient **MUST** treat it as an unrecoverable error."

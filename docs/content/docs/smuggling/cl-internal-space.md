@@ -16,6 +16,17 @@ weight: 27
 
 `Content-Length: 1 0` — space inside the number.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Content-Length: 1 0\r\n
+\r\n
+hello12345
+```
+
+The Content-Length value `1 0` has a space between the digits.
+
+
 ## What the RFC says
 
 > CL grammar is `1*DIGIT` with no internal whitespace.

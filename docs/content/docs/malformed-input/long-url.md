@@ -15,6 +15,15 @@ weight: 2
 
 A request with a ~100 KB URL.
 
+```http
+GET /AAAA...{100,000 × 'A'}... HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+The URL path is 100,001 bytes long (a `/` followed by 100,000 `A` characters).
+
+
 ## What the RFC says
 
 > "A server that receives a request-target longer than any URI it wishes to parse **MUST** respond with a 414 (URI Too Long) status code."

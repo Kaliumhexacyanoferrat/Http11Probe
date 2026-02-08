@@ -16,6 +16,13 @@ weight: 9
 
 `GET http://host/ HTTP/1.1` — the absolute-form request-target.
 
+```http
+GET http://localhost:8080/ HTTP/1.1\r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "When making a request to a proxy, other than a CONNECT or server-wide OPTIONS request, a client MUST send the target URI in absolute-form as the request-target." — RFC 9112 Section 3.2.2. A server MUST accept absolute-form requests.

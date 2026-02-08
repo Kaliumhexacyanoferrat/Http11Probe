@@ -16,6 +16,17 @@ weight: 1
 
 A WebSocket upgrade request using `POST` instead of `GET`, with all standard WebSocket headers (`Connection: Upgrade`, `Upgrade: websocket`, `Sec-WebSocket-Key`, `Sec-WebSocket-Version: 13`).
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Connection: Upgrade\r\n
+Upgrade: websocket\r\n
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n
+Sec-WebSocket-Version: 13\r\n
+\r\n
+```
+
+
 ## What the RFC says
 
 > "The method of the request MUST be GET, and the HTTP version MUST be at least 1.1." — RFC 6455 Section 4.1

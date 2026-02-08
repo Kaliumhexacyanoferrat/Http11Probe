@@ -16,6 +16,16 @@ weight: 6
 
 A request with whitespace (SP) before the first header line, between the request-line and the headers.
 
+```http
+GET / HTTP/1.1\r\n
+ \r\n
+Host: localhost:8080\r\n
+\r\n
+```
+
+A line with a single space appears between the request-line and the first header.
+
+
 ## What the RFC says
 
 > "A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it." — RFC 9112 Section 2.2

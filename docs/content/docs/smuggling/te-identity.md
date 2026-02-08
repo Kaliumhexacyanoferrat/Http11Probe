@@ -16,6 +16,16 @@ weight: 30
 
 A request with `Transfer-Encoding: identity` and `Content-Length: 5`. The `identity` encoding was deprecated and removed in HTTP/1.1 (RFC 7230 and later RFC 9112).
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: identity\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+
 ## What the RFC says
 
 > "The 'identity' transfer coding was used in previous versions of this specification to mean 'no encoding'... but has since been removed." — RFC 9112 Section 7

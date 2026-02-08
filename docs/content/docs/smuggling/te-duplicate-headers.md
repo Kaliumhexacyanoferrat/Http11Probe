@@ -16,6 +16,19 @@ weight: 24
 
 Two TE headers (`chunked` and `identity`) plus Content-Length.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+Transfer-Encoding: identity\r\n
+Content-Length: 5\r\n
+\r\n
+hello
+```
+
+Two separate `Transfer-Encoding` headers with different values, plus a `Content-Length`.
+
+
 ## What the RFC says
 
 > When both TE and CL are present, TE takes priority — but two conflicting TE headers create ambiguity.

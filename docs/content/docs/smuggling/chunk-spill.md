@@ -16,6 +16,20 @@ weight: 26
 
 A chunked request that declares chunk size `5` but sends 7 bytes of data (`hello!!`), followed by the terminator.
 
+```http
+POST / HTTP/1.1\r\n
+Host: localhost:8080\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5\r\n
+hello!!\r\n
+0\r\n
+\r\n
+```
+
+The chunk size declares 5 bytes but the data is `hello!!` (7 bytes).
+
+
 ## What the RFC says
 
 > "The chunk-data is a sequence of chunk-size octets." — RFC 9112 Section 7.1

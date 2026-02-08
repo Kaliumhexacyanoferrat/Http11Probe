@@ -16,6 +16,13 @@ weight: 5
 
 An HTTP/0.9 style request: `GET /\r\n` — a method and target with no HTTP version.
 
+```http
+GET /\r\n
+```
+
+No HTTP version, no headers, no blank line — just a raw path terminated by CRLF.
+
+
 ## What the RFC says
 
 Without a version, the request-line does not match the `method SP request-target SP HTTP-version CRLF` grammar. It is an invalid request-line, and the SHOULD from Section 3 applies. The server may also not recognize this as a request at all, hence timeout is acceptable.

@@ -14,6 +14,14 @@ weight: 14
 
 A line consisting only of spaces and tabs -- no method, URI, or version.
 
+```http
+   \r\n
+\r\n
+```
+
+The request-line consists of three spaces followed by CRLF — no method, target, or version.
+
+
 ## Why it matters
 
 RFC 9112 Section 2.2 allows servers to ignore an empty line before the request-line. But a line of only whitespace is neither empty nor a valid request-line.

@@ -18,13 +18,14 @@ A request with an obsolete line-folded header value — a continuation line that
 
 ```http
 GET / HTTP/1.1\r\n
-Host: localhost\r\n
-X-Test: value1\r\n
- continuation\r\n
+Host: localhost:8080\r\n
+X-Test: value\r\n
+ continued\r\n
 \r\n
 ```
 
-The ` continuation` line (starting with a space) is "obs-fold" — it was valid in older HTTP but is deprecated.
+The `X-Test` header value is split across two lines. The second line starts with a space (obs-fold / line folding).
+
 
 ## What the RFC says
 

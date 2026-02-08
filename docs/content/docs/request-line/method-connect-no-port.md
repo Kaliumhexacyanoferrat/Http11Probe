@@ -16,6 +16,15 @@ weight: 13
 
 `CONNECT example.com HTTP/1.1` — a CONNECT request with authority-form that is missing the required port.
 
+```http
+CONNECT example.com HTTP/1.1\r\n
+Host: example.com\r\n
+\r\n
+```
+
+The CONNECT target uses the hostname without a port number.
+
+
 ## What the RFC says
 
 > "The 'authority-form' of request-target is only used for CONNECT requests... authority = uri-host ':' port" — RFC 9112 Section 3.2.3
