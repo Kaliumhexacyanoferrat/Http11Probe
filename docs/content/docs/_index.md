@@ -17,4 +17,5 @@ Reference documentation for every test in Http11Probe, organized by topic. Each 
   {{< card link="content-length" title="Content-Length" subtitle="Non-numeric CL, plus sign, integer overflow, leading zeros, negative values." icon="calculator" >}}
   {{< card link="smuggling" title="Request Smuggling" subtitle="CL+TE conflicts, TE obfuscation, pipeline injection, and why ambiguous framing is dangerous." icon="shield-exclamation" >}}
   {{< card link="malformed-input" title="Malformed Input" subtitle="Binary garbage, oversized fields, control characters, incomplete requests." icon="lightning-bolt" >}}
+  {{< card link="upgrade" title="Upgrade / WebSocket" subtitle="Protocol upgrade validation, WebSocket handshake method and version checks." icon="arrow-up" >}}
 {{< /cards >}}

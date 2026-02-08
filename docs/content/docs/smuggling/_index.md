@@ -83,6 +83,13 @@ For these, `400` is the strict/safe response and `2xx` is RFC-compliant. Http11P
   {{< card link="cl-internal-space" title="CL-INTERNAL-SPACE" subtitle="Space inside Content-Length value." >}}
   {{< card link="chunk-leading-sp" title="CHUNK-LEADING-SP" subtitle="Leading space in chunk size." >}}
   {{< card link="chunk-missing-trailing-crlf" title="CHUNK-MISSING-TRAILING-CRLF" subtitle="Chunk data without trailing CRLF." >}}
+  {{< card link="chunk-ext-lf" title="CHUNK-EXT-LF" subtitle="Bare LF in chunk extension (TERM.EXT vector)." >}}
+  {{< card link="chunk-spill" title="CHUNK-SPILL" subtitle="Chunk declares size 5 but sends 7 bytes." >}}
+  {{< card link="chunk-lf-term" title="CHUNK-LF-TERM" subtitle="Bare LF as chunk data terminator." >}}
+  {{< card link="chunk-ext-ctrl" title="CHUNK-EXT-CTRL" subtitle="NUL byte in chunk extension." >}}
+  {{< card link="chunk-lf-trailer" title="CHUNK-LF-TRAILER" subtitle="Bare LF in trailer section termination." >}}
+  {{< card link="te-identity" title="TE-IDENTITY" subtitle="Transfer-Encoding: identity (deprecated) with CL." >}}
+  {{< card link="chunk-negative" title="CHUNK-NEGATIVE" subtitle="Negative chunk size (-1)." >}}
 {{< /cards >}}
 
 ### Unscored
@@ -97,4 +104,9 @@ For these, `400` is the strict/safe response and `2xx` is RFC-compliant. Http11P
   {{< card link="cl-comma-same" title="CL-COMMA-SAME" subtitle="Comma-separated identical CL values." >}}
   {{< card link="chunked-with-params" title="CHUNKED-WITH-PARAMS" subtitle="Parameters on chunked encoding." >}}
   {{< card link="expect-100-cl" title="EXPECT-100-CL" subtitle="Expect: 100-continue with Content-Length." >}}
+  {{< card link="trailer-cl" title="TRAILER-CL" subtitle="Content-Length in chunked trailers (prohibited)." >}}
+  {{< card link="trailer-te" title="TRAILER-TE" subtitle="Transfer-Encoding in chunked trailers (prohibited)." >}}
+  {{< card link="trailer-host" title="TRAILER-HOST" subtitle="Host header in chunked trailers (must not route)." >}}
+  {{< card link="head-cl-body" title="HEAD-CL-BODY" subtitle="HEAD with Content-Length and body." >}}
+  {{< card link="options-cl-body" title="OPTIONS-CL-BODY" subtitle="OPTIONS with Content-Length and body." >}}
 {{< /cards >}}

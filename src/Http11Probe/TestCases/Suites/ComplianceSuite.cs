@@ -443,6 +443,177 @@ public static class ComplianceSuite
                 AllowConnectionClose = true
             }
         };
+
+        // ── Upgrade / WebSocket ─────────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-UPGRADE-POST",
+            Description = "WebSocket upgrade via POST must not be accepted",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 6455 §4.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    return response.StatusCode == 101 ? TestVerdict.Fail : TestVerdict.Pass;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-UPGRADE-MISSING-CONN",
+            Description = "Upgrade header without Connection: Upgrade must not trigger protocol switch",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §7.8",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    return response.StatusCode == 101 ? TestVerdict.Fail : TestVerdict.Pass;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-UPGRADE-UNKNOWN",
+            Description = "Upgrade to unknown protocol must not return 101",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §7.8",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: totally-made-up/1.0\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    return response.StatusCode == 101 ? TestVerdict.Fail : TestVerdict.Pass;
+                }
+            }
+        };
+
+        // ── Methods ─────────────────────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-METHOD-CONNECT",
+            Description = "CONNECT to an origin server must be rejected",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §9.3.6",
+            PayloadFactory = _ => MakeRequest(
+                "CONNECT example.com:443 HTTP/1.1\r\nHost: example.com:443\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    return response.StatusCode is 400 or 405 or 501
+                        ? TestVerdict.Pass
+                        : TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-METHOD-CONNECT-NO-PORT",
+            Description = "CONNECT without port in authority-form must be rejected",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9112 §3.2.3",
+            PayloadFactory = _ => MakeRequest(
+                "CONNECT example.com HTTP/1.1\r\nHost: example.com\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        // ── Expect ──────────────────────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-EXPECT-UNKNOWN",
+            Description = "Unknown Expect value should be rejected with 417",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §10.1.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nExpect: 200-ok\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 417)
+                        return TestVerdict.Pass;
+                    // Some servers ignore unknown Expect values
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        // ── Unscored ────────────────────────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-UPGRADE-INVALID-VER",
+            Description = "WebSocket upgrade with unsupported version — should return 426",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 6455 §4.4",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 99\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 101)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode == 426)
+                        return TestVerdict.Pass;
+                    // Server doesn't support WebSocket — ignores upgrade
+                    return TestVerdict.Warn;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-METHOD-TRACE",
+            Description = "TRACE request — should be disabled in production",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §9.3.8",
+            PayloadFactory = ctx => MakeRequest(
+                $"TRACE / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is 405 or 501)
+                        return TestVerdict.Pass;
+                    // TRACE enabled — works but potential security concern
+                    return TestVerdict.Warn;
+                }
+            }
+        };
     }
 
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);

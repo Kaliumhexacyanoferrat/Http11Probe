@@ -49,17 +49,27 @@ window.ProbeRender = (function () {
     'COMP-BASELINE': '',
     'COMP-CONNECT-EMPTY-PORT': '/Http11Probe/docs/request-line/connect-empty-port/',
     'COMP-DUPLICATE-HOST-SAME': '/Http11Probe/docs/host-header/duplicate-host-same/',
+    'COMP-EXPECT-UNKNOWN': '/Http11Probe/docs/headers/expect-unknown/',
     'COMP-HOST-WITH-PATH': '/Http11Probe/docs/host-header/host-with-path/',
     'COMP-HOST-WITH-USERINFO': '/Http11Probe/docs/host-header/host-with-userinfo/',
     'COMP-LEADING-CRLF': '/Http11Probe/docs/line-endings/leading-crlf/',
     'COMP-METHOD-CASE': '/Http11Probe/docs/request-line/method-case/',
+    'COMP-METHOD-CONNECT': '/Http11Probe/docs/request-line/method-connect/',
+    'COMP-METHOD-CONNECT-NO-PORT': '/Http11Probe/docs/request-line/method-connect-no-port/',
+    'COMP-METHOD-TRACE': '/Http11Probe/docs/request-line/method-trace/',
     'COMP-OPTIONS-STAR': '/Http11Probe/docs/request-line/options-star/',
     'COMP-UNKNOWN-TE-501': '/Http11Probe/docs/request-line/unknown-te-501/',
+    'COMP-UPGRADE-INVALID-VER': '/Http11Probe/docs/upgrade/upgrade-invalid-ver/',
+    'COMP-UPGRADE-MISSING-CONN': '/Http11Probe/docs/upgrade/upgrade-missing-conn/',
+    'COMP-UPGRADE-POST': '/Http11Probe/docs/upgrade/upgrade-post/',
+    'COMP-UPGRADE-UNKNOWN': '/Http11Probe/docs/upgrade/upgrade-unknown/',
     'COMP-WHITESPACE-BEFORE-HEADERS': '/Http11Probe/docs/headers/whitespace-before-headers/',
     'MAL-BINARY-GARBAGE': '/Http11Probe/docs/malformed-input/binary-garbage/',
     'MAL-CHUNK-EXTENSION-LONG': '/Http11Probe/docs/malformed-input/chunk-extension-long/',
     'MAL-CHUNK-SIZE-OVERFLOW': '/Http11Probe/docs/malformed-input/chunk-size-overflow/',
+    'MAL-CL-EMPTY': '/Http11Probe/docs/malformed-input/cl-empty/',
     'MAL-CL-OVERFLOW': '/Http11Probe/docs/malformed-input/cl-overflow/',
+    'MAL-CL-TAB-BEFORE-VALUE': '/Http11Probe/docs/malformed-input/cl-tab-before-value/',
     'MAL-CONTROL-CHARS-HEADER': '/Http11Probe/docs/malformed-input/control-chars-header/',
     'MAL-EMPTY-REQUEST': '/Http11Probe/docs/malformed-input/empty-request/',
     'MAL-H2-PREFACE': '/Http11Probe/docs/malformed-input/h2-preface/',
@@ -76,7 +86,7 @@ window.ProbeRender = (function () {
     'MAL-WHITESPACE-ONLY-LINE': '/Http11Probe/docs/malformed-input/whitespace-only-line/',
     'RFC9110-5.4-DUPLICATE-HOST': '/Http11Probe/docs/host-header/duplicate-host/',
     'RFC9110-5.6.2-SP-BEFORE-COLON': '/Http11Probe/docs/headers/sp-before-colon/',
-    'RFC9110-8.6-DUPLICATE-CL': '/Http11Probe/docs/smuggling/duplicate-cl/',
+    'SMUG-DUPLICATE-CL': '/Http11Probe/docs/smuggling/duplicate-cl/',
     'RFC9112-2.2-BARE-LF-HEADER': '/Http11Probe/docs/line-endings/bare-lf-header/',
     'RFC9112-2.2-BARE-LF-REQUEST-LINE': '/Http11Probe/docs/line-endings/bare-lf-request-line/',
     'RFC9112-2.3-HTTP09-REQUEST': '/Http11Probe/docs/request-line/http09-request/',
@@ -89,17 +99,23 @@ window.ProbeRender = (function () {
     'RFC9112-5-HEADER-NO-COLON': '/Http11Probe/docs/headers/header-no-colon/',
     'RFC9112-5-INVALID-HEADER-NAME': '/Http11Probe/docs/headers/invalid-header-name/',
     'RFC9112-5.1-OBS-FOLD': '/Http11Probe/docs/headers/obs-fold/',
-    'RFC9112-6.1-CL-LEADING-ZEROS': '/Http11Probe/docs/smuggling/cl-leading-zeros/',
-    'RFC9112-6.1-CL-NEGATIVE': '/Http11Probe/docs/smuggling/cl-negative/',
+    'SMUG-CL-LEADING-ZEROS': '/Http11Probe/docs/smuggling/cl-leading-zeros/',
+    'SMUG-CL-NEGATIVE': '/Http11Probe/docs/smuggling/cl-negative/',
     'RFC9112-6.1-CL-NON-NUMERIC': '/Http11Probe/docs/content-length/cl-non-numeric/',
     'RFC9112-6.1-CL-PLUS-SIGN': '/Http11Probe/docs/content-length/cl-plus-sign/',
-    'RFC9112-6.1-CL-TE-BOTH': '/Http11Probe/docs/smuggling/cl-te-both/',
+    'SMUG-CL-TE-BOTH': '/Http11Probe/docs/smuggling/cl-te-both/',
     'RFC9112-7.1-MISSING-HOST': '/Http11Probe/docs/host-header/missing-host/',
     'SMUG-BARE-CR-HEADER-VALUE': '/Http11Probe/docs/smuggling/bare-cr-header-value/',
     'SMUG-CHUNK-BARE-SEMICOLON': '/Http11Probe/docs/smuggling/chunk-bare-semicolon/',
+    'SMUG-CHUNK-EXT-CTRL': '/Http11Probe/docs/smuggling/chunk-ext-ctrl/',
+    'SMUG-CHUNK-EXT-LF': '/Http11Probe/docs/smuggling/chunk-ext-lf/',
     'SMUG-CHUNK-HEX-PREFIX': '/Http11Probe/docs/smuggling/chunk-hex-prefix/',
     'SMUG-CHUNK-LEADING-SP': '/Http11Probe/docs/smuggling/chunk-leading-sp/',
+    'SMUG-CHUNK-LF-TERM': '/Http11Probe/docs/smuggling/chunk-lf-term/',
+    'SMUG-CHUNK-LF-TRAILER': '/Http11Probe/docs/smuggling/chunk-lf-trailer/',
     'SMUG-CHUNK-MISSING-TRAILING-CRLF': '/Http11Probe/docs/smuggling/chunk-missing-trailing-crlf/',
+    'SMUG-CHUNK-NEGATIVE': '/Http11Probe/docs/smuggling/chunk-negative/',
+    'SMUG-CHUNK-SPILL': '/Http11Probe/docs/smuggling/chunk-spill/',
     'SMUG-CHUNK-UNDERSCORE': '/Http11Probe/docs/smuggling/chunk-underscore/',
     'SMUG-CHUNKED-WITH-PARAMS': '/Http11Probe/docs/smuggling/chunked-with-params/',
     'SMUG-CL-COMMA-DIFFERENT': '/Http11Probe/docs/smuggling/cl-comma-different/',
@@ -111,7 +127,9 @@ window.ProbeRender = (function () {
     'SMUG-CL-TRAILING-SPACE': '/Http11Probe/docs/smuggling/cl-trailing-space/',
     'SMUG-CLTE-PIPELINE': '/Http11Probe/docs/smuggling/clte-pipeline/',
     'SMUG-EXPECT-100-CL': '/Http11Probe/docs/smuggling/expect-100-cl/',
+    'SMUG-HEAD-CL-BODY': '/Http11Probe/docs/smuggling/head-cl-body/',
     'SMUG-HEADER-INJECTION': '/Http11Probe/docs/smuggling/header-injection/',
+    'SMUG-OPTIONS-CL-BODY': '/Http11Probe/docs/smuggling/options-cl-body/',
     'SMUG-TE-CASE-MISMATCH': '/Http11Probe/docs/smuggling/te-case-mismatch/',
     'SMUG-TE-DOUBLE-CHUNKED': '/Http11Probe/docs/smuggling/te-double-chunked/',
     'SMUG-TE-DUPLICATE-HEADERS': '/Http11Probe/docs/smuggling/te-duplicate-headers/',
@@ -121,8 +139,12 @@ window.ProbeRender = (function () {
     'SMUG-TE-NOT-FINAL-CHUNKED': '/Http11Probe/docs/smuggling/te-not-final-chunked/',
     'SMUG-TE-SP-BEFORE-COLON': '/Http11Probe/docs/smuggling/te-sp-before-colon/',
     'SMUG-TE-TRAILING-SPACE': '/Http11Probe/docs/smuggling/te-trailing-space/',
+    'SMUG-TE-IDENTITY': '/Http11Probe/docs/smuggling/te-identity/',
     'SMUG-TE-XCHUNKED': '/Http11Probe/docs/smuggling/te-xchunked/',
     'SMUG-TECL-PIPELINE': '/Http11Probe/docs/smuggling/tecl-pipeline/',
+    'SMUG-TRAILER-CL': '/Http11Probe/docs/smuggling/trailer-cl/',
+    'SMUG-TRAILER-HOST': '/Http11Probe/docs/smuggling/trailer-host/',
+    'SMUG-TRAILER-TE': '/Http11Probe/docs/smuggling/trailer-te/',
     'SMUG-TRANSFER_ENCODING': '/Http11Probe/docs/smuggling/transfer-encoding-underscore/'
   };
 
@@ -195,14 +217,16 @@ window.ProbeRender = (function () {
     el.innerHTML = html;
   }
 
-  function renderTable(targetId, categoryKey, ctx) {
+  function renderTable(targetId, categoryKey, ctx, testIdFilter) {
     injectScrollStyle();
     var el = document.getElementById(targetId);
     if (!el) return;
     var names = ctx.names, lookup = ctx.lookup, testIds = ctx.testIds;
 
     var catTests = testIds.filter(function (tid) {
-      return lookup[names[0]][tid] && lookup[names[0]][tid].category === categoryKey;
+      if (!(lookup[names[0]][tid] && lookup[names[0]][tid].category === categoryKey)) return false;
+      if (testIdFilter) return testIdFilter.indexOf(tid) !== -1;
+      return true;
     });
     if (catTests.length === 0) {
       el.innerHTML = '<p><em>No tests in this category.</em></p>';
@@ -282,6 +306,24 @@ window.ProbeRender = (function () {
         rows.forEach(function (r) { r.classList.remove('probe-row-active'); });
         if (!wasActive) row.classList.add('probe-row-active');
       });
+    });
+  }
+
+  // ── Sub-table renderer ─────────────────────────────────────────
+  function renderSubTables(targetId, categoryKey, ctx, groups) {
+    injectScrollStyle();
+    var el = document.getElementById(targetId);
+    if (!el) return;
+    var html = '';
+    groups.forEach(function (g) {
+      var divId = targetId + '-' + g.key;
+      html += '<h3 style="margin-top:1.5em;margin-bottom:0.3em;">' + g.label + '</h3>';
+      html += '<div id="' + divId + '"></div>';
+    });
+    el.innerHTML = html;
+    groups.forEach(function (g) {
+      var divId = targetId + '-' + g.key;
+      renderTable(divId, categoryKey, ctx, g.testIds);
     });
   }
 
@@ -432,6 +474,7 @@ window.ProbeRender = (function () {
     buildLookups: buildLookups,
     renderSummary: renderSummary,
     renderTable: renderTable,
+    renderSubTables: renderSubTables,
     renderLanguageFilter: renderLanguageFilter,
     filterByCategory: filterByCategory,
     renderCategoryFilter: renderCategoryFilter,

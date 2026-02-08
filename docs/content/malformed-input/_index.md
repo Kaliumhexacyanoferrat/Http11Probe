@@ -10,15 +10,6 @@ These tests send pathological, oversized, or completely invalid payloads to veri
 
 A well-implemented server should respond with `400 Bad Request`, `414 URI Too Long`, or `431 Request Header Fields Too Large` depending on the violation, or simply close the connection.
 
-**What's tested:**
-- **Binary garbage** &mdash; random bytes that aren't valid HTTP at all
-- **Oversized fields** &mdash; 100 KB URLs, header names, header values, and method names
-- **Too many headers** &mdash; 10,000 headers in a single request
-- **Invalid bytes** &mdash; NUL bytes in URL, control characters in header values, non-ASCII in header names and URLs
-- **Integer overflow** &mdash; `Content-Length` value exceeding 64-bit integer range
-- **Incomplete/empty requests** &mdash; partial HTTP or zero bytes sent
-- **Whitespace-only request** &mdash; just spaces/tabs with no method or URI
-
 <div id="lang-filter"></div>
 <div id="table-malformed"><p><em>Loading...</em></p></div>
 
@@ -30,9 +21,27 @@ A well-implemented server should respond with `400 Bad Request`, `414 URI Too Lo
     document.getElementById('table-malformed').innerHTML = '<p><em>No probe data available yet. Run the Probe workflow manually on <code>main</code> to generate results.</em></p>';
     return;
   }
+  var GROUPS = [
+    { key: 'oversized', label: 'Oversized Fields', testIds: [
+      'MAL-LONG-URL','MAL-LONG-HEADER-NAME','MAL-LONG-HEADER-VALUE',
+      'MAL-LONG-METHOD','MAL-MANY-HEADERS','MAL-CHUNK-EXTENSION-LONG'
+    ]},
+    { key: 'invalid-bytes', label: 'Invalid Bytes', testIds: [
+      'MAL-NUL-IN-URL','MAL-NUL-IN-HEADER-VALUE','MAL-CONTROL-CHARS-HEADER',
+      'MAL-NON-ASCII-HEADER-NAME','MAL-NON-ASCII-URL','MAL-BINARY-GARBAGE'
+    ]},
+    { key: 'integer-cl', label: 'Integer & CL Parsing', testIds: [
+      'MAL-CL-OVERFLOW','MAL-CL-EMPTY','MAL-CHUNK-SIZE-OVERFLOW',
+      'MAL-CL-TAB-BEFORE-VALUE'
+    ]},
+    { key: 'edge-cases', label: 'Incomplete & Edge Cases', testIds: [
+      'MAL-INCOMPLETE-REQUEST','MAL-EMPTY-REQUEST',
+      'MAL-WHITESPACE-ONLY-LINE','MAL-H2-PREFACE'
+    ]}
+  ];
   function render(data) {
     var ctx = ProbeRender.buildLookups(data.servers);
-    ProbeRender.renderTable('table-malformed', 'MalformedInput', ctx);
+    ProbeRender.renderSubTables('table-malformed', 'MalformedInput', ctx, GROUPS);
   }
   render(window.PROBE_DATA);
   ProbeRender.renderLanguageFilter('lang-filter', window.PROBE_DATA, render);

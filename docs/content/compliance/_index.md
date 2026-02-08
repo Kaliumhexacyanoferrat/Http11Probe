@@ -10,14 +10,6 @@ These tests validate that HTTP/1.1 servers correctly implement the protocol requ
 
 Each test sends a request that violates a specific **MUST** or **MUST NOT** requirement from the RFCs. A compliant server should reject these with a `400 Bad Request` (or close the connection). Accepting the request silently means the server is non-compliant and potentially vulnerable to downstream attacks.
 
-**What's tested:**
-- **Line endings** &mdash; bare `LF` without `CR`, `CR` without `LF` (RFC 9112 &sect;2.2)
-- **Request-line format** &mdash; multiple spaces, missing target, fragments in URI (RFC 9112 &sect;3)
-- **HTTP version** &mdash; invalid version strings, HTTP/0.9 requests (RFC 9112 &sect;2.3)
-- **Header syntax** &mdash; obs-fold, space before colon, empty names, invalid characters, missing colon (RFC 9112 &sect;5, RFC 9110 &sect;5.6.2)
-- **Host header** &mdash; missing or duplicate Host with conflicting values (RFC 9112 &sect;7.1, RFC 9110 &sect;5.4)
-- **Content-Length** &mdash; non-numeric, plus sign, overflow (RFC 9112 &sect;6.1)
-
 <div id="lang-filter"></div>
 <div id="table-compliance"><p><em>Loading...</em></p></div>
 
@@ -29,9 +21,44 @@ Each test sends a request that violates a specific **MUST** or **MUST NOT** requ
     document.getElementById('table-compliance').innerHTML = '<p><em>No probe data available yet. Run the Probe workflow manually on <code>main</code> to generate results.</em></p>';
     return;
   }
+  var GROUPS = [
+    { key: 'baseline', label: 'Baseline', testIds: [
+      'COMP-BASELINE'
+    ]},
+    { key: 'line-endings', label: 'Line Endings', testIds: [
+      'RFC9112-2.2-BARE-LF-REQUEST-LINE','RFC9112-2.2-BARE-LF-HEADER',
+      'RFC9112-3-CR-ONLY-LINE-ENDING','COMP-LEADING-CRLF','COMP-WHITESPACE-BEFORE-HEADERS'
+    ]},
+    { key: 'request-line', label: 'Request Line', testIds: [
+      'RFC9112-3-MULTI-SP-REQUEST-LINE','RFC9112-3-MISSING-TARGET',
+      'RFC9112-3.2-FRAGMENT-IN-TARGET','RFC9112-2.3-INVALID-VERSION',
+      'RFC9112-2.3-HTTP09-REQUEST','COMP-ASTERISK-WITH-GET','COMP-OPTIONS-STAR',
+      'COMP-CONNECT-EMPTY-PORT','COMP-ABSOLUTE-FORM','COMP-METHOD-CASE'
+    ]},
+    { key: 'headers', label: 'Header Syntax', testIds: [
+      'RFC9112-5.1-OBS-FOLD','RFC9110-5.6.2-SP-BEFORE-COLON',
+      'RFC9112-5-EMPTY-HEADER-NAME','RFC9112-5-INVALID-HEADER-NAME',
+      'RFC9112-5-HEADER-NO-COLON'
+    ]},
+    { key: 'host', label: 'Host Header', testIds: [
+      'RFC9112-7.1-MISSING-HOST','RFC9110-5.4-DUPLICATE-HOST',
+      'COMP-DUPLICATE-HOST-SAME','COMP-HOST-WITH-USERINFO','COMP-HOST-WITH-PATH'
+    ]},
+    { key: 'content-length', label: 'Content-Length', testIds: [
+      'RFC9112-6.1-CL-NON-NUMERIC','RFC9112-6.1-CL-PLUS-SIGN'
+    ]},
+    { key: 'methods', label: 'Methods & Routing', testIds: [
+      'COMP-METHOD-CONNECT','COMP-METHOD-CONNECT-NO-PORT',
+      'COMP-UNKNOWN-TE-501','COMP-EXPECT-UNKNOWN','COMP-METHOD-TRACE'
+    ]},
+    { key: 'upgrade', label: 'Upgrade / WebSocket', testIds: [
+      'COMP-UPGRADE-POST','COMP-UPGRADE-MISSING-CONN',
+      'COMP-UPGRADE-UNKNOWN','COMP-UPGRADE-INVALID-VER'
+    ]}
+  ];
   function render(data) {
     var ctx = ProbeRender.buildLookups(data.servers);
-    ProbeRender.renderTable('table-compliance', 'Compliance', ctx);
+    ProbeRender.renderSubTables('table-compliance', 'Compliance', ctx, GROUPS);
   }
   render(window.PROBE_DATA);
   ProbeRender.renderLanguageFilter('lang-filter', window.PROBE_DATA, render);

@@ -377,6 +377,45 @@ public static class MalformedInputSuite
                 }
             }
         };
+
+        yield return new TestCase
+        {
+            Id = "MAL-CL-EMPTY",
+            Description = "Empty Content-Length value must be rejected",
+            Category = TestCategory.MalformedInput,
+            RfcReference = "RFC 9110 §8.6",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: \r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "MAL-CL-TAB-BEFORE-VALUE",
+            Description = "Content-Length with tab as OWS — valid per RFC but unusual",
+            Category = TestCategory.MalformedInput,
+            RfcReference = "RFC 9110 §5.5",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length:\t5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // 2xx = server accepted tab as OWS (RFC-compliant)
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
     }
 
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);

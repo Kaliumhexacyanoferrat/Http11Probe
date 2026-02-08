@@ -26,6 +26,8 @@ Note this is a SHOULD, not a MUST. The RFC recommends 400 but does not mandate i
   {{< card link="options-star" title="OPTIONS-STAR" subtitle="OPTIONS * — valid asterisk-form request." >}}
   {{< card link="unknown-te-501" title="UNKNOWN-TE-501" subtitle="Unknown Transfer-Encoding without CL." >}}
   {{< card link="connect-empty-port" title="CONNECT-EMPTY-PORT" subtitle="CONNECT with empty port in authority-form." >}}
+  {{< card link="method-connect" title="METHOD-CONNECT" subtitle="CONNECT to an origin server must be rejected." >}}
+  {{< card link="method-connect-no-port" title="METHOD-CONNECT-NO-PORT" subtitle="CONNECT without port in authority-form." >}}
 {{< /cards >}}
 
 ### Unscored
@@ -33,4 +35,5 @@ Note this is a SHOULD, not a MUST. The RFC recommends 400 but does not mandate i
 {{< cards >}}
   {{< card link="absolute-form" title="ABSOLUTE-FORM" subtitle="Absolute-form request-target (http://host/)." >}}
   {{< card link="method-case" title="METHOD-CASE" subtitle="Lowercase method 'get'. Methods are case-sensitive." >}}
+  {{< card link="method-trace" title="METHOD-TRACE" subtitle="TRACE request — should be disabled in production." >}}
 {{< /cards >}}

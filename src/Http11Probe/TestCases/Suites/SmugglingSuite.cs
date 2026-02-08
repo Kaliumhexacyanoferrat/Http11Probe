@@ -511,6 +511,134 @@ public static class SmugglingSuite
             }
         };
 
+        // ── Funky chunks (2024–2025 research) ───────────────────────
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-EXT-LF",
+            Description = "Bare LF in chunk extension must be rejected (TERM.EXT vector)",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1.1",
+            PayloadFactory = ctx =>
+            {
+                // Chunk line: "5;\n" — bare LF in extension area
+                var request = $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5;\nhello\r\n0\r\n\r\n";
+                return Encoding.ASCII.GetBytes(request);
+            },
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-SPILL",
+            Description = "Chunk declares size 5 but sends 7 bytes — oversized chunk data must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello!!\r\n0\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-LF-TERM",
+            Description = "Bare LF as chunk data terminator must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1",
+            PayloadFactory = ctx =>
+            {
+                // Chunk data terminated with \n instead of \r\n
+                var request = $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\n0\r\n\r\n";
+                return Encoding.ASCII.GetBytes(request);
+            },
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-EXT-CTRL",
+            Description = "NUL byte in chunk extension must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1.1",
+            PayloadFactory = ctx =>
+            {
+                var before = Encoding.ASCII.GetBytes($"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5;");
+                byte[] nul = [0x00];
+                var after = Encoding.ASCII.GetBytes("ext\r\nhello\r\n0\r\n\r\n");
+                var payload = new byte[before.Length + nul.Length + after.Length];
+                before.CopyTo(payload, 0);
+                nul.CopyTo(payload, before.Length);
+                after.CopyTo(payload, before.Length + nul.Length);
+                return payload;
+            },
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-LF-TRAILER",
+            Description = "Bare LF in chunked trailer section termination must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1",
+            PayloadFactory = ctx =>
+            {
+                // Last CRLF of trailer replaced with bare LF: "0\r\n\n"
+                var request = $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\n";
+                return Encoding.ASCII.GetBytes(request);
+            },
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-TE-IDENTITY",
+            Description = "Transfer-Encoding: identity (deprecated) with CL must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: identity\r\nContent-Length: 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-CHUNK-NEGATIVE",
+            Description = "Negative chunk size must be rejected",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §7.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n-1\r\nhello\r\n0\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                ExpectedStatus = StatusCodeRange.Exact(400),
+                AllowConnectionClose = true
+            }
+        };
+
         // ── Unscored ──────────────────────────────────────────────────
 
         yield return new TestCase
@@ -595,6 +723,119 @@ public static class SmugglingSuite
                     if (response.StatusCode == 400)
                         return TestVerdict.Pass;
                     // 2xx or 100 means server handled Expect properly
+                    return TestVerdict.Warn;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-TRAILER-CL",
+            Description = "Content-Length in chunked trailers must be ignored — prohibited trailer field",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §6.5.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Length: 50\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // 2xx = server processed chunked body and ignored trailer CL
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-TRAILER-TE",
+            Description = "Transfer-Encoding in chunked trailers must be ignored — prohibited trailer field",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §6.5.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nTransfer-Encoding: chunked\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-TRAILER-HOST",
+            Description = "Host header in chunked trailers must not be used for routing",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §6.5.2",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nHost: evil.example.com\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-HEAD-CL-BODY",
+            Description = "HEAD request with Content-Length and body — server must not leave body on connection",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §9.3.2",
+            PayloadFactory = ctx => MakeRequest(
+                $"HEAD / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    // Server responded to HEAD — check that it consumed or closed
+                    return TestVerdict.Warn;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "SMUG-OPTIONS-CL-BODY",
+            Description = "OPTIONS with Content-Length and body — server should consume or reject body",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §9.3.7",
+            PayloadFactory = ctx => MakeRequest(
+                $"OPTIONS / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
                     return TestVerdict.Warn;
                 }
             }
