@@ -162,7 +162,7 @@ jobs:
             total  = len(scored_results)
             passed = sum(1 for r in scored_results if r['verdict'] == 'Pass')
             warned = sum(1 for r in results if r['verdict'] == 'Warn')
-            unscored = sum(1 for r in results if not r['scored'])
+            unscored = sum(1 for r in results if not r['scored'] and r['verdict'] != 'Warn')
             return {
                 'summary': {'total': len(results), 'scored': total, 'passed': passed, 'failed': total - passed, 'warnings': warned, 'unscored': unscored},
                 'results': results,
