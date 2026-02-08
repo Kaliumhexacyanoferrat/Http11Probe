@@ -1,5 +1,8 @@
 FROM ruby:3.3-slim
-RUN gem install puma --no-doc
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
+    gem install puma --no-doc && \
+    apt-get purge -y build-essential && apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 COPY src/Servers/PumaServer/config.ru /app/config.ru
 WORKDIR /app
 EXPOSE 8080
