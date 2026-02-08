@@ -55,7 +55,7 @@ params:
       link: /Http11Probe/
       light: images/logo.svg
       dark: images/logo-dark.svg
-      width: 36
+      width: 32
       height: 32
   footer:
     displayCopyright: false
