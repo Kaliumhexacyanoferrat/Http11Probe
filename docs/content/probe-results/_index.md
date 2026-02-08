@@ -8,8 +8,8 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 
 ## Summary
 
-<div id="lang-filter"></div>
-<div id="cat-filter"></div>
+<div id="lang-filter" style="margin-bottom:6px;"></div>
+<div id="cat-filter" style="margin-bottom:16px;"></div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
 
 {{< callout type="info" >}}

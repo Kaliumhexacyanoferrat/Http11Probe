@@ -307,7 +307,9 @@ window.ProbeRender = (function () {
       + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
       + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
 
-    var html = '<div style="margin-bottom:12px;">';
+    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
+    html += '<span style="' + labelStyle + '">Language:</span>';
     html += '<button class="probe-lang-btn" data-lang="" style="' + btnStyle
       + 'background:' + activeBg + ';color:#fff;border-color:' + activeBg + ';">All</button>';
     langList.forEach(function (lang) {
@@ -387,11 +389,14 @@ window.ProbeRender = (function () {
 
     var filters = [
       { label: 'All', categories: null },
-      { label: 'Compliance', categories: ['Compliance', 'Malformed Input'] },
-      { label: 'Smuggling', categories: ['Smuggling'] }
+      { label: 'Compliance', categories: ['Compliance'] },
+      { label: 'Smuggling', categories: ['Smuggling'] },
+      { label: 'Malformed Input', categories: ['Malformed Input'] }
     ];
 
-    var html = '<div style="margin-bottom:12px;">';
+    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
+    html += '<span style="' + labelStyle + '">Category:</span>';
     filters.forEach(function (f, i) {
       var isActive = i === 0;
       html += '<button class="probe-cat-btn" data-idx="' + i + '" style="' + btnStyle
