@@ -223,10 +223,12 @@ window.ProbeRender = (function () {
         html += '<div style="height:100%;width:' + failPct + '%;background:' + FAIL_BG + ';transition:width 0.3s;"></div>';
       }
       html += '</div>';
-      // Score: (pass+warn) / total
-      var combined = s.passed + warnings;
-      html += '<div style="min-width:130px;text-align:right;font-size:13px;">';
-      html += '<span style="font-weight:700;color:' + PASS_BG + ';">' + combined + '</span>';
+      // Score: pass + warn / total
+      html += '<div style="min-width:160px;text-align:right;font-size:13px;">';
+      html += '<span style="font-weight:700;color:' + PASS_BG + ';">' + s.passed + '</span>';
+      if (warnings > 0) {
+        html += ' + <span style="font-weight:700;color:' + WARN_BG + ';">' + warnings + '</span>';
+      }
       if (failed > 0) {
         html += ' <span style="color:' + FAIL_BG + ';">' + failed + ' fail</span>';
       }
