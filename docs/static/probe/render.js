@@ -254,7 +254,9 @@ window.ProbeRender = (function () {
       }
       html += '</div>';
       // Score: pass + warn [fail] [unscored] / total
-      var unscored = s.unscored || 0;
+      var unscored = s.unscored != null ? s.unscored
+        : sv.results ? sv.results.filter(function (r) { return r.scored === false; }).length
+        : 0;
       html += '<div style="min-width:200px;text-align:right;font-size:13px;">';
       html += '<span style="font-weight:700;color:' + PASS_BG + ';">' + s.passed + '</span>';
       if (warnings > 0) {
