@@ -220,11 +220,23 @@ window.ProbeRender = (function () {
       el.innerHTML = '<p><em>No server results found.</em></p>';
       return;
     }
+    function scoredCounts(sv) {
+      var p = 0, w = 0, f = 0;
+      if (sv.results) {
+        sv.results.forEach(function (r) {
+          if (r.scored === false) return;
+          if (r.verdict === 'Pass') p++;
+          else if (r.verdict === 'Warn') w++;
+          else if (r.verdict === 'Fail') f++;
+        });
+      } else {
+        p = sv.summary.passed || 0;
+        w = sv.summary.warnings || 0;
+      }
+      return p + w;
+    }
     var sorted = servers.slice().sort(function (a, b) {
-      var sa = a.summary, sb = b.summary;
-      var pa = (sa.passed + (sa.warnings || 0)) / (sa.total || 1);
-      var pb = (sb.passed + (sb.warnings || 0)) / (sb.total || 1);
-      return pb - pa || a.name.localeCompare(b.name);
+      return scoredCounts(b) - scoredCounts(a) || a.name.localeCompare(b.name);
     });
 
     var html = '<div style="display:flex;flex-direction:column;gap:6px;max-width:780px;">';
