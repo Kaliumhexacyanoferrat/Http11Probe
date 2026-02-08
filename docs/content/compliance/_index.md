@@ -22,29 +22,18 @@ Each test sends a request that violates a specific **MUST** or **MUST NOT** requ
     return;
   }
   var GROUPS = [
-    { key: 'baseline', label: 'Baseline', testIds: [
-      'COMP-BASELINE'
-    ]},
-    { key: 'line-endings', label: 'Line Endings', testIds: [
+    { key: 'request-parsing', label: 'Request Parsing', testIds: [
       'RFC9112-2.2-BARE-LF-REQUEST-LINE','RFC9112-2.2-BARE-LF-HEADER',
-      'RFC9112-3-CR-ONLY-LINE-ENDING','COMP-LEADING-CRLF','COMP-WHITESPACE-BEFORE-HEADERS'
-    ]},
-    { key: 'request-line', label: 'Request Line', testIds: [
+      'RFC9112-3-CR-ONLY-LINE-ENDING','COMP-LEADING-CRLF','COMP-WHITESPACE-BEFORE-HEADERS',
       'RFC9112-3-MULTI-SP-REQUEST-LINE','RFC9112-3-MISSING-TARGET',
       'RFC9112-3.2-FRAGMENT-IN-TARGET','RFC9112-2.3-INVALID-VERSION',
       'RFC9112-2.3-HTTP09-REQUEST','COMP-ASTERISK-WITH-GET','COMP-OPTIONS-STAR',
-      'COMP-CONNECT-EMPTY-PORT','COMP-ABSOLUTE-FORM','COMP-METHOD-CASE'
-    ]},
-    { key: 'headers', label: 'Header Syntax', testIds: [
+      'COMP-CONNECT-EMPTY-PORT','COMP-ABSOLUTE-FORM','COMP-METHOD-CASE',
       'RFC9112-5.1-OBS-FOLD','RFC9110-5.6.2-SP-BEFORE-COLON',
       'RFC9112-5-EMPTY-HEADER-NAME','RFC9112-5-INVALID-HEADER-NAME',
-      'RFC9112-5-HEADER-NO-COLON'
-    ]},
-    { key: 'host', label: 'Host Header', testIds: [
+      'RFC9112-5-HEADER-NO-COLON',
       'RFC9112-7.1-MISSING-HOST','RFC9110-5.4-DUPLICATE-HOST',
-      'COMP-DUPLICATE-HOST-SAME','COMP-HOST-WITH-USERINFO','COMP-HOST-WITH-PATH'
-    ]},
-    { key: 'content-length', label: 'Content-Length', testIds: [
+      'COMP-DUPLICATE-HOST-SAME','COMP-HOST-WITH-USERINFO','COMP-HOST-WITH-PATH',
       'RFC9112-6.1-CL-NON-NUMERIC','RFC9112-6.1-CL-PLUS-SIGN'
     ]},
     { key: 'body', label: 'Body Handling', testIds: [
@@ -53,11 +42,9 @@ Each test sends a request that violates a specific **MUST** or **MUST NOT** requ
       'COMP-CHUNKED-EMPTY','COMP-CHUNKED-NO-FINAL',
       'COMP-GET-WITH-CL-BODY','COMP-CHUNKED-EXTENSION'
     ]},
-    { key: 'methods', label: 'Methods & Routing', testIds: [
+    { key: 'methods-upgrade', label: 'Methods & Upgrade', testIds: [
       'COMP-METHOD-CONNECT','COMP-METHOD-CONNECT-NO-PORT',
-      'COMP-UNKNOWN-TE-501','COMP-EXPECT-UNKNOWN','COMP-METHOD-TRACE'
-    ]},
-    { key: 'upgrade', label: 'Upgrade / WebSocket', testIds: [
+      'COMP-UNKNOWN-TE-501','COMP-EXPECT-UNKNOWN','COMP-METHOD-TRACE',
       'COMP-UPGRADE-POST','COMP-UPGRADE-MISSING-CONN',
       'COMP-UPGRADE-UNKNOWN','COMP-UPGRADE-INVALID-VER'
     ]}

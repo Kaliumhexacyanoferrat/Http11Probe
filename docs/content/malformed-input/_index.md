@@ -22,19 +22,15 @@ A well-implemented server should respond with `400 Bad Request`, `414 URI Too Lo
     return;
   }
   var GROUPS = [
-    { key: 'oversized', label: 'Oversized Fields', testIds: [
+    { key: 'oversized', label: 'Oversized & Invalid Bytes', testIds: [
       'MAL-LONG-URL','MAL-LONG-HEADER-NAME','MAL-LONG-HEADER-VALUE',
-      'MAL-LONG-METHOD','MAL-MANY-HEADERS','MAL-CHUNK-EXTENSION-LONG'
-    ]},
-    { key: 'invalid-bytes', label: 'Invalid Bytes', testIds: [
+      'MAL-LONG-METHOD','MAL-MANY-HEADERS','MAL-CHUNK-EXTENSION-LONG',
       'MAL-NUL-IN-URL','MAL-NUL-IN-HEADER-VALUE','MAL-CONTROL-CHARS-HEADER',
       'MAL-NON-ASCII-HEADER-NAME','MAL-NON-ASCII-URL','MAL-BINARY-GARBAGE'
     ]},
-    { key: 'integer-cl', label: 'Integer & CL Parsing', testIds: [
+    { key: 'parsing-edge', label: 'Parsing & Edge Cases', testIds: [
       'MAL-CL-OVERFLOW','MAL-CL-EMPTY','MAL-CHUNK-SIZE-OVERFLOW',
-      'MAL-CL-TAB-BEFORE-VALUE'
-    ]},
-    { key: 'edge-cases', label: 'Incomplete & Edge Cases', testIds: [
+      'MAL-CL-TAB-BEFORE-VALUE',
       'MAL-INCOMPLETE-REQUEST','MAL-EMPTY-REQUEST',
       'MAL-WHITESPACE-ONLY-LINE','MAL-H2-PREFACE'
     ]}

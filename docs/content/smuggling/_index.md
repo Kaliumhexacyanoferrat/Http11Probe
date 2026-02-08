@@ -26,16 +26,12 @@ Some tests are **unscored** (marked with `*`). These send payloads where the RFC
     return;
   }
   var GROUPS = [
-    { key: 'cl-te', label: 'CL + TE Conflicts', testIds: [
-      'SMUG-CL-TE-BOTH','SMUG-CLTE-PIPELINE','SMUG-TECL-PIPELINE','SMUG-TE-HTTP10'
-    ]},
-    { key: 'cl-parsing', label: 'Content-Length Parsing', testIds: [
+    { key: 'framing', label: 'Framing Conflicts', testIds: [
+      'SMUG-CL-TE-BOTH','SMUG-CLTE-PIPELINE','SMUG-TECL-PIPELINE','SMUG-TE-HTTP10',
       'SMUG-DUPLICATE-CL','SMUG-CL-LEADING-ZEROS','SMUG-CL-NEGATIVE',
       'SMUG-CL-COMMA-DIFFERENT','SMUG-CL-OCTAL','SMUG-CL-HEX-PREFIX',
       'SMUG-CL-INTERNAL-SPACE','SMUG-CL-COMMA-SAME',
-      'SMUG-CL-TRAILING-SPACE','SMUG-CL-EXTRA-LEADING-SP'
-    ]},
-    { key: 'te-obfuscation', label: 'Transfer-Encoding Obfuscation', testIds: [
+      'SMUG-CL-TRAILING-SPACE','SMUG-CL-EXTRA-LEADING-SP',
       'SMUG-TE-XCHUNKED','SMUG-TE-TRAILING-SPACE','SMUG-TE-SP-BEFORE-COLON',
       'SMUG-TE-EMPTY-VALUE','SMUG-TE-LEADING-COMMA','SMUG-TE-DUPLICATE-HEADERS',
       'SMUG-TE-NOT-FINAL-CHUNKED','SMUG-TE-IDENTITY',
@@ -48,13 +44,9 @@ Some tests are **unscored** (marked with `*`). These send payloads where the RFC
       'SMUG-CHUNK-EXT-LF','SMUG-CHUNK-SPILL','SMUG-CHUNK-LF-TERM',
       'SMUG-CHUNK-EXT-CTRL','SMUG-CHUNK-LF-TRAILER','SMUG-CHUNK-NEGATIVE'
     ]},
-    { key: 'headers', label: 'Headers & Injection', testIds: [
-      'SMUG-BARE-CR-HEADER-VALUE','SMUG-HEADER-INJECTION'
-    ]},
-    { key: 'trailers', label: 'Trailers', testIds: [
-      'SMUG-TRAILER-CL','SMUG-TRAILER-TE','SMUG-TRAILER-HOST'
-    ]},
-    { key: 'method-body', label: 'Method & Body Handling', testIds: [
+    { key: 'other', label: 'Headers, Trailers & Methods', testIds: [
+      'SMUG-BARE-CR-HEADER-VALUE','SMUG-HEADER-INJECTION',
+      'SMUG-TRAILER-CL','SMUG-TRAILER-TE','SMUG-TRAILER-HOST',
       'SMUG-EXPECT-100-CL','SMUG-HEAD-CL-BODY','SMUG-OPTIONS-CL-BODY'
     ]}
   ];
