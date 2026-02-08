@@ -8,8 +8,8 @@ public static class ConsoleReporter
     public static void PrintHeader()
     {
         Console.WriteLine();
-        Console.WriteLine("  {0,-35} {1,-10} {2,-6} {3}", "Test ID", "Verdict", "Status", "Details");
-        Console.WriteLine("  " + new string('─', 80));
+        Console.WriteLine("  {0,-35} {1,-10} {2,-14} {3,-6} {4}", "Test ID", "Verdict", "Expected", "Status", "Details");
+        Console.WriteLine("  " + new string('─', 95));
     }
 
     public static void PrintRow(TestResult result)
@@ -37,11 +37,26 @@ public static class ConsoleReporter
         if (detail.Length > 30)
             detail = detail[..30] + "...";
 
+        var expected = result.TestCase.Expected.GetDescription();
+        if (expected.Length > 14)
+            expected = expected[..14];
+
+        var docsUrl = DocsUrlMap.GetUrl(result.TestCase.Id);
+
         var prev = Console.ForegroundColor;
         Console.ForegroundColor = color;
         Console.Write("  {0,-35} {1,-10}", result.TestCase.Id, symbol);
         Console.ForegroundColor = prev;
-        Console.WriteLine(" {0,-6} {1}", statusStr, detail);
+        Console.Write(" {0,-14} {1,-6} {2}", expected, statusStr, detail);
+
+        if (docsUrl is not null)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write($"  {docsUrl}");
+            Console.ForegroundColor = prev;
+        }
+
+        Console.WriteLine();
     }
 
     public static void PrintSummary(TestRunReport report)
