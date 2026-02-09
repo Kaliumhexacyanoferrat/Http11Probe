@@ -52,6 +52,7 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
                 int headerByteCount;
                 while (true)
                 {
+                    request.Clear();
                     var result = await reader.ReadAsync(ct);
                     var buffer = result.Buffer;
 

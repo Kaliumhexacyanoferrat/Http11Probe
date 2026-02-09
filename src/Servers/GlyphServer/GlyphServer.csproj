@@ -14,7 +14,6 @@
     <!-- Local project reference during development; switch back to NuGet for release -->
     <!-- NuGet for CI; project reference for local dev -->
     <PackageReference Include="Glyph11" Version="0.3.1" />
-    <!--<ProjectReference Include="../../../../Glyph11/src/Glyph11/Glyph11.csproj" />-->
   </ItemGroup>
 
 </Project>
