@@ -8,7 +8,7 @@ window.ProbeRender = (function () {
   var pillCss = 'text-align:center;padding:2px 4px;font-size:11px;font-weight:600;color:#fff;border-radius:3px;min-width:28px;display:inline-block;line-height:18px;';
 
   // Servers temporarily hidden from results (undergoing major changes)
-  var BLACKLISTED_SERVERS = ['GenHTTP', 'SimpleW'];
+  var BLACKLISTED_SERVERS = ['GenHTTP'];
   function filterBlacklisted(servers) {
     return servers.filter(function (sv) {
       return BLACKLISTED_SERVERS.indexOf(sv.name) === -1;
