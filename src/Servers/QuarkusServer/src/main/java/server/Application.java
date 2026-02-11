@@ -14,4 +14,11 @@ public class Application {
     public String catchAll() {
         return "OK";
     }
+
+    @POST
+    @Path("{path:.*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String catchAllPost() {
+        return "OK";
+    }
 }
