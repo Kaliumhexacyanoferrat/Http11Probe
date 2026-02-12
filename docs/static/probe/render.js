@@ -292,6 +292,47 @@ window.ProbeRender = (function () {
     return TEST_URLS[tid] || '';
   }
 
+  // ── Server name → config page URL mapping ────────────────────
+  var SERVER_URLS = {
+    'Actix': '/Http11Probe/servers/actix/',
+    'Apache': '/Http11Probe/servers/apache/',
+    'Bun': '/Http11Probe/servers/bun/',
+    'Caddy': '/Http11Probe/servers/caddy/',
+    'Deno': '/Http11Probe/servers/deno/',
+    'EmbedIO': '/Http11Probe/servers/embedio/',
+    'Envoy': '/Http11Probe/servers/envoy/',
+    'Express': '/Http11Probe/servers/express/',
+    'FastHTTP': '/Http11Probe/servers/fasthttp/',
+    'Flask': '/Http11Probe/servers/flask/',
+    'GenHTTP': '/Http11Probe/servers/genhttp/',
+    'Gin': '/Http11Probe/servers/gin/',
+    'Glyph11': '/Http11Probe/servers/glyph/',
+    'Gunicorn': '/Http11Probe/servers/gunicorn/',
+    'H2O': '/Http11Probe/servers/h2o/',
+    'HAProxy': '/Http11Probe/servers/haproxy/',
+    'Hyper': '/Http11Probe/servers/hyper/',
+    'Jetty': '/Http11Probe/servers/jetty/',
+    'Kestrel': '/Http11Probe/servers/aspnet-minimal/',
+    'Lighttpd': '/Http11Probe/servers/lighttpd/',
+    'NetCoreServer': '/Http11Probe/servers/netcoreserver/',
+    'Nginx': '/Http11Probe/servers/nginx/',
+    'Node': '/Http11Probe/servers/node/',
+    'Ntex': '/Http11Probe/servers/ntex/',
+    'PHP': '/Http11Probe/servers/php/',
+    'Pingora': '/Http11Probe/servers/pingora/',
+    'Puma': '/Http11Probe/servers/puma/',
+    'Quarkus': '/Http11Probe/servers/quarkus/',
+    'ServiceStack': '/Http11Probe/servers/servicestack/',
+    'SimpleW': '/Http11Probe/servers/simplew/',
+    'Sisk': '/Http11Probe/servers/sisk/',
+    'Spring Boot': '/Http11Probe/servers/spring-boot/',
+    'Tomcat': '/Http11Probe/servers/tomcat/',
+    'Traefik': '/Http11Probe/servers/traefik/',
+    'Uvicorn': '/Http11Probe/servers/uvicorn/',
+    'Watson': '/Http11Probe/servers/watson/'
+  };
+  function serverUrl(name) { return SERVER_URLS[name] || ''; }
+
   function pill(bg, label, tooltipRaw, tooltipNote, tooltipReq) {
     var extra = '';
     var hasData = tooltipRaw || tooltipReq;
@@ -374,7 +415,10 @@ window.ProbeRender = (function () {
 
       html += '<div style="display:flex;align-items:center;gap:10px;">';
       html += '<div style="min-width:24px;text-align:right;font-size:13px;font-weight:600;color:#656d76;">' + rank + '</div>';
-      var nameLabel = sv.name;
+      var sUrl = serverUrl(sv.name);
+      var nameLabel = sUrl
+        ? '<a href="' + sUrl + '" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">' + sv.name + '</a>'
+        : sv.name;
       if (sv.language) nameLabel += ' <span style="font-weight:400;color:#656d76;font-size:11px;">(' + sv.language + ')</span>';
       html += '<div style="min-width:150px;font-size:13px;font-weight:600;white-space:nowrap;">' + nameLabel + '</div>';
       var trackBg = document.documentElement.classList.contains('dark') ? '#2a2f38' : '#f0f0f0';
@@ -488,7 +532,11 @@ window.ProbeRender = (function () {
       t += '<tr class="probe-server-row">';
       var lang = serverLangs[n];
       var langSuffix = lang ? ' <span style="font-weight:400;color:#656d76;font-size:10px;">(' + lang + ')</span>' : '';
-      t += '<td style="padding:4px 8px;font-weight:600;font-size:12px;white-space:nowrap;">' + n + langSuffix + '</td>';
+      var srvUrl = serverUrl(n);
+      var srvName = srvUrl
+        ? '<a href="' + srvUrl + '" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">' + n + '</a>'
+        : n;
+      t += '<td style="padding:4px 8px;font-weight:600;font-size:12px;white-space:nowrap;">' + srvName + langSuffix + '</td>';
       orderedTests.forEach(function (tid) {
         var r = lookup[n] && lookup[n][tid];
         var isUnscored = lookup[names[0]][tid].scored === false;
@@ -511,7 +559,8 @@ window.ProbeRender = (function () {
     // Row click-to-highlight (one at a time)
     var rows = el.querySelectorAll('.probe-server-row');
     rows.forEach(function (row) {
-      row.addEventListener('click', function () {
+      row.addEventListener('click', function (e) {
+        if (e.target.closest('a')) return;
         var wasActive = row.classList.contains('probe-row-active');
         rows.forEach(function (r) { r.classList.remove('probe-row-active'); });
         if (!wasActive) row.classList.add('probe-row-active');

@@ -12,6 +12,10 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 
 ## Summary
 
+{{< callout type="info" >}}
+These results are from CI runs (`ubuntu-latest`). Click a **server name** to view its Dockerfile and source code. Click on the **Compliance**, **Smuggling**, or **Malformed Input** tabs above for detailed results per category, where you can click any **result cell** to see the full HTTP request and response.
+{{< /callout >}}
+
 <div id="lang-filter" style="margin-bottom:6px;"></div>
 <div id="cat-filter" style="margin-bottom:16px;"></div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
@@ -23,10 +27,6 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 **Fail** — the server gave the wrong response. It either accepted a request it should have rejected, or rejected one it should have accepted.
 
 **Unscored** — tests marked with `*` in the detail tables. These cover RFC language that uses "MAY" or permits multiple valid behaviors, so there is no single correct answer to score against. They are still run and displayed for visibility, but do not count toward the pass/fail score.
-
-{{< callout type="info" >}}
-These results are from CI runs (`ubuntu-latest`). Click on the **Compliance**, **Smuggling**, or **Malformed Input** tabs above for detailed results per category.
-{{< /callout >}}
 
 <script src="/Http11Probe/probe/data.js"></script>
 <script src="/Http11Probe/probe/render.js"></script>

@@ -10,6 +10,10 @@ These tests send pathological, oversized, or completely invalid payloads to veri
 
 A well-implemented server should respond with `400 Bad Request`, `414 URI Too Long`, or `431 Request Header Fields Too Large` depending on the violation, or simply close the connection.
 
+{{< callout type="info" >}}
+Click a **server name** to view its Dockerfile and source code. Click a **result cell** to see the full HTTP request and response.
+{{< /callout >}}
+
 <div id="lang-filter"></div>
 <div id="table-malformed"><p><em>Loading...</em></p></div>
 
