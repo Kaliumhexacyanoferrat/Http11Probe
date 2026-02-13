@@ -19,6 +19,9 @@ timeoutOption.DefaultValueFactory = _ => 5;
 
 var outputOption = new Option<string?>("--output") { Description = "Write JSON results to this file path" };
 
+var verboseOption = new Option<bool>("--verbose", "-v") { Description = "Print the raw server response for each test" };
+verboseOption.DefaultValueFactory = _ => false;
+
 var rootCommand = new RootCommand("Http11Probe — HTTP/1.1 server compliance & hardening tester")
 {
     hostOption,
@@ -26,7 +29,8 @@ var rootCommand = new RootCommand("Http11Probe — HTTP/1.1 server compliance & 
     categoryOption,
     testOption,
     timeoutOption,
-    outputOption
+    outputOption,
+    verboseOption
 };
 
 rootCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -37,6 +41,7 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     var timeout = parseResult.GetValue(timeoutOption);
     var testIds = parseResult.GetValue(testOption);
     var outputPath = parseResult.GetValue(outputOption);
+    var verbose = parseResult.GetValue(verboseOption);
 
     Console.WriteLine($"  Http11Probe targeting {host}:{port}");
     Console.WriteLine();
@@ -62,7 +67,12 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     var runner = new TestRunner(options);
 
     ConsoleReporter.PrintHeader();
-    var report = await runner.RunAsync(testCases, ConsoleReporter.PrintRow);
+    var report = await runner.RunAsync(testCases, result =>
+    {
+        ConsoleReporter.PrintRow(result);
+        if (verbose)
+            ConsoleReporter.PrintRawResponse(result);
+    });
     ConsoleReporter.PrintSummary(report);
 
     if (outputPath is not null)

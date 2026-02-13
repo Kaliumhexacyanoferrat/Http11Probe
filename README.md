@@ -48,6 +48,7 @@ dotnet run --project src/Http11Probe.Cli -- --host localhost --port 8080
 | `--test` | Run only specific test IDs, case-insensitive (repeatable) | all |
 | `--timeout` | Connect and read timeout in seconds per test | `5` |
 | `--output` | Write JSON results to file | — |
+| `--verbose`, `-v` | Print the raw server response for each test | off |
 
 ### Examples
 
