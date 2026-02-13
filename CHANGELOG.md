@@ -12,6 +12,7 @@ All notable changes to Http11Probe are documented in this file.
 - **Row-click detail popup** — clicking a server row opens a modal showing that server's results for the current table in a vertical layout (Test, Expected, Got, Description) with section and table name in the header
 - **Truncation notice** — tooltip and modal now show a `[Truncated]` notice at the top when raw request/response data exceeds the 8,192-byte display limit
 - **Filter box** — text input above result tables to filter by server name, language, or test name; supports multiple comma-separated keywords
+- **`--verbose` CLI flag** — prints the raw server response below each test result when enabled (`--verbose` or `-v`)
 
 ### Changed
 - **Horizontal column headers** — test name headers are now displayed horizontally instead of rotated at -55°, improving readability
@@ -31,6 +32,7 @@ All notable changes to Http11Probe are documented in this file.
 - **Stronger sticky shadow on mobile** — increased shadow intensity for the pinned server name column
 - **Scrollable tooltips** — hover tooltips are now interactive and scrollable for large payloads (removed `pointer-events:none`, increased `max-height` to `60vh`)
 - **Larger click modal** — expanded from `max-width:700px` to `90vw` and `max-height` from `80vh` to `85vh` to better accommodate large request/response data
+- **Kestrel HEAD/OPTIONS support** — added explicit HEAD and OPTIONS endpoint handlers to ASP.NET Minimal server so smuggling tests evaluate correctly instead of returning 405
 - Raw request capture now includes truncation metadata when payload exceeds 8,192 bytes (`TestRunner.cs`)
 - Raw response capture now includes truncation metadata when response exceeds 8,192 bytes (`ResponseParser.cs`)
 

@@ -62,6 +62,27 @@ public static class ConsoleReporter
         Console.WriteLine();
     }
 
+    public static void PrintRawResponse(TestResult result)
+    {
+        if (result.Verdict == TestVerdict.Skip)
+            return;
+
+        var raw = result.Response?.RawResponse;
+        if (raw is null)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("    (no response)");
+            Console.ResetColor();
+            return;
+        }
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        foreach (var line in raw.Split('\n'))
+            Console.WriteLine($"    {line.TrimEnd('\r')}");
+        Console.ResetColor();
+        Console.WriteLine();
+    }
+
     public static void PrintSummary(TestRunReport report)
     {
         Console.WriteLine("  " + new string('─', 80));
