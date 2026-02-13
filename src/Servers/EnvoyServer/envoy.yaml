@@ -12,6 +12,24 @@ static_resources:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                 stat_prefix: ingress_http
                 http_filters:
+                  - name: envoy.filters.http.lua
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                      default_source_code:
+                        inline_string: |
+                          function envoy_on_request(request_handle)
+                            local path = request_handle:headers():get(":path")
+                            if path == "/echo" then
+                              local body = ""
+                              local headers = request_handle:headers()
+                              for key, value in pairs(headers) do
+                                if key:sub(1,1) ~= ":" then
+                                  body = body .. key .. ": " .. value .. "\n"
+                                end
+                              end
+                              request_handle:respond({[":status"] = "200", ["content-type"] = "text/plain"}, body)
+                            end
+                          end
                   - name: envoy.filters.http.router
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

@@ -1,3 +1,11 @@
 :8080 {
+    handle /echo {
+        root * /srv
+        templates {
+            mime text/plain
+        }
+        rewrite * /echo.html
+        file_server
+    }
     respond "OK" 200
 }

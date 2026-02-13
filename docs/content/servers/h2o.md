@@ -34,7 +34,18 @@ hosts:
       /:
         mruby.handler: |
           proc {|env|
-            if env["REQUEST_METHOD"] == "POST"
+            if env["PATH_INFO"] == "/echo"
+              body = ""
+              env.each do |k, v|
+                if k.start_with?("HTTP_")
+                  name = k.sub("HTTP_", "").split("_").map(&:capitalize).join("-")
+                  body += "#{name}: #{v}\n"
+                end
+              end
+              body += "Content-Type: #{env['CONTENT_TYPE']}\n" if env['CONTENT_TYPE'] && !env['CONTENT_TYPE'].empty?
+              body += "Content-Length: #{env['CONTENT_LENGTH']}\n" if env['CONTENT_LENGTH'] && !env['CONTENT_LENGTH'].empty?
+              [200, {"content-type" => "text/plain"}, [body]]
+            elsif env["REQUEST_METHOD"] == "POST"
               body = env["rack.input"] ? env["rack.input"].read : ""
               [200, {"content-type" => "text/plain"}, [body]]
             else

@@ -10,6 +10,17 @@ use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
 
 async fn handle(req: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+    if req.uri().path() == "/echo" {
+        let mut body = String::new();
+        for (name, value) in req.headers() {
+            body.push_str(&format!("{}: {}\n", name, value.to_str().unwrap_or("")));
+        }
+        return Ok(Response::builder()
+            .status(200)
+            .header("Content-Type", "text/plain")
+            .body(Full::new(Bytes::from(body)))
+            .unwrap());
+    }
     if req.method() == hyper::Method::POST {
         let body = match http_body_util::BodyExt::collect(req.into_body()).await {
             Ok(collected) => collected.to_bytes(),

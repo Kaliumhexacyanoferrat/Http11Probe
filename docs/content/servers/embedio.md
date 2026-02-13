@@ -34,6 +34,14 @@ var url = $"http://*:{port}/";
 using var server = new WebServer(o => o
     .WithUrlPrefix(url)
     .WithMode(HttpListenerMode.EmbedIO))
+    .WithModule(new ActionModule("/echo", HttpVerbs.Any, async ctx =>
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var key in ctx.Request.Headers.AllKeys)
+            foreach (var val in ctx.Request.Headers.GetValues(key)!)
+                sb.AppendLine($"{key}: {val}");
+        await ctx.SendStringAsync(sb.ToString(), "text/plain", System.Text.Encoding.UTF8);
+    }))
     .WithModule(new ActionModule("/", HttpVerbs.Any, async ctx =>
     {
         ctx.Response.ContentType = "text/plain";

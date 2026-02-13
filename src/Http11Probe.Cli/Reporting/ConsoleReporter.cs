@@ -67,11 +67,10 @@ public static class ConsoleReporter
         Console.WriteLine("  " + new string('─', 80));
         Console.WriteLine();
 
-        var scoredCount = report.PassCount + report.FailCount;
         var prev = Console.ForegroundColor;
         Console.Write("  Score: ");
-        Console.ForegroundColor = report.FailCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
-        Console.Write($"{report.PassCount}/{scoredCount}");
+        Console.ForegroundColor = report.FailCount == 0 && report.WarnCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
+        Console.Write($"{report.PassCount}/{report.ScoredCount}");
         Console.ForegroundColor = prev;
 
         if (report.FailCount > 0)

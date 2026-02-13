@@ -285,7 +285,12 @@ window.ProbeRender = (function () {
     'SMUG-TE-OBS-FOLD': '/Http11Probe/docs/smuggling/te-obs-fold/',
     'SMUG-TE-TAB-BEFORE-VALUE': '/Http11Probe/docs/smuggling/te-tab-before-value/',
     'SMUG-TE-TRAILING-COMMA': '/Http11Probe/docs/smuggling/te-trailing-comma/',
-    'SMUG-TRAILER-CONTENT-TYPE': '/Http11Probe/docs/smuggling/trailer-content-type/'
+    'SMUG-TRAILER-CONTENT-TYPE': '/Http11Probe/docs/smuggling/trailer-content-type/',
+    'NORM-UNDERSCORE-CL': '/Http11Probe/docs/normalization/underscore-cl/',
+    'NORM-SP-BEFORE-COLON-CL': '/Http11Probe/docs/normalization/sp-before-colon-cl/',
+    'NORM-TAB-IN-NAME': '/Http11Probe/docs/normalization/tab-in-name/',
+    'NORM-CASE-TE': '/Http11Probe/docs/normalization/case-te/',
+    'NORM-UNDERSCORE-TE': '/Http11Probe/docs/normalization/underscore-te/'
   };
 
   function testUrl(tid) {
@@ -488,7 +493,7 @@ window.ProbeRender = (function () {
     var orderedTests = scoredTests.concat(unscoredTests);
 
     var shortLabels = orderedTests.map(function (tid) {
-      return tid.replace(/^(RFC\d+-[\d.]+-|COMP-|SMUG-|MAL-)/, '');
+      return tid.replace(/^(RFC\d+-[\d.]+-|COMP-|SMUG-|MAL-|NORM-)/, '');
     });
 
     var t = '<div class="probe-scroll"><table class="probe-table" style="border-collapse:collapse;font-size:12px;white-space:nowrap;">';
@@ -709,7 +714,8 @@ window.ProbeRender = (function () {
       { label: 'All', categories: null },
       { label: 'Compliance', categories: ['Compliance'] },
       { label: 'Smuggling', categories: ['Smuggling'] },
-      { label: 'Malformed Input', categories: ['MalformedInput'] }
+      { label: 'Malformed Input', categories: ['MalformedInput'] },
+      { label: 'Normalization', categories: ['Normalization'] }
     ];
 
     var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';

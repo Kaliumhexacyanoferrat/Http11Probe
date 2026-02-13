@@ -56,6 +56,7 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     var testCases = ComplianceSuite.GetTestCases()
         .Concat(SmugglingSuite.GetTestCases())
         .Concat(MalformedInputSuite.GetTestCases())
+        .Concat(NormalizationSuite.GetTestCases())
         .ToList();
 
     var runner = new TestRunner(options);

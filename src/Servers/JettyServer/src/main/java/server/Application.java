@@ -3,6 +3,7 @@ package server;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Request;
@@ -19,7 +20,15 @@ public class Application extends Handler.Abstract {
     public boolean handle(Request request, Response response, Callback callback) throws Exception {
         response.setStatus(200);
         response.getHeaders().put("Content-Type", "text/plain");
-        if ("POST".equals(request.getMethod())) {
+
+        if ("/echo".equals(request.getHttpURI().getPath())) {
+            StringBuilder sb = new StringBuilder();
+            for (HttpField field : request.getHeaders()) {
+                sb.append(field.getName()).append(": ").append(field.getValue()).append("\n");
+            }
+            byte[] echoBody = sb.toString().getBytes(StandardCharsets.UTF_8);
+            response.write(true, ByteBuffer.wrap(echoBody), callback);
+        } else if ("POST".equals(request.getMethod())) {
             byte[] body = Request.asInputStream(request).readAllBytes();
             response.write(true, ByteBuffer.wrap(body), callback);
         } else {
