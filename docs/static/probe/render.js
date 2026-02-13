@@ -51,44 +51,85 @@ window.ProbeRender = (function () {
       + 'html.dark .probe-server-row.probe-row-active{background:#2a3a50 !important}'
       + 'html.dark .probe-table thead a{color:#58a6ff !important}'
       // Tooltip (hover)
-      + '.probe-tooltip{position:fixed;z-index:9999;background:#1c1c1c;color:#e0e0e0;font-family:monospace;font-size:11px;'
-      + 'white-space:pre;padding:8px 10px;border-radius:6px;max-width:500px;max-height:300px;overflow:auto;'
-      + 'pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);line-height:1.4}'
+      + '.probe-tooltip{position:fixed;z-index:10001;background:#1c1c1c;color:#e0e0e0;font-family:monospace;font-size:11px;'
+      + 'white-space:pre;padding:8px 10px;border-radius:6px;max-width:500px;max-height:60vh;overflow:auto;'
+      + 'box-shadow:0 4px 16px rgba(0,0,0,0.3);line-height:1.4}'
       + '.probe-tooltip .probe-note{color:#f0c674;font-family:sans-serif;font-weight:600;font-size:11px;margin-bottom:6px;white-space:normal}'
       + '.probe-tooltip .probe-label{color:#81a2be;font-family:sans-serif;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px}'
       + '.probe-tooltip .probe-label:not(:first-child){margin-top:8px;padding-top:8px;border-top:1px solid #333}'
       // Modal (click)
       + '.probe-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center}'
       + '.probe-modal{background:#1c1c1c;color:#e0e0e0;font-family:monospace;font-size:12px;white-space:pre;'
-      + 'padding:16px 20px;border-radius:8px;max-width:700px;max-height:80vh;overflow:auto;'
+      + 'padding:16px 20px;border-radius:8px;max-width:90vw;max-height:85vh;overflow:auto;'
       + 'box-shadow:0 8px 32px rgba(0,0,0,0.5);line-height:1.5;position:relative;min-width:300px}'
       + '.probe-modal .probe-note{color:#f0c674;font-family:sans-serif;font-weight:600;font-size:13px;margin-bottom:10px;white-space:normal}'
       + '.probe-modal .probe-label{color:#81a2be;font-family:sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}'
       + '.probe-modal .probe-label:not(:first-child){margin-top:12px;padding-top:12px;border-top:1px solid #333}'
       + '.probe-modal-close{position:sticky;top:0;float:right;background:none;border:none;color:#808080;font-size:20px;'
       + 'cursor:pointer;padding:0 4px;line-height:1;font-family:sans-serif}'
-      + '.probe-modal-close:hover{color:#fff}';
+      + '.probe-modal-close:hover{color:#fff}'
+      // Sticky first column — light
+      + '.probe-table .probe-sticky-col{position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 4px rgba(0,0,0,0.06)}'
+      + '.probe-table thead .probe-sticky-col{z-index:3}'
+      + 'tr[data-expected-row] .probe-sticky-col{background:#f6f8fa}'
+      + '.probe-server-row:hover .probe-sticky-col{background:#eef1f5}'
+      + '.probe-server-row.probe-row-active .probe-sticky-col{background:#c8ddf0}'
+      // Sticky first column — dark
+      + 'html.dark .probe-table .probe-sticky-col{background:#1c2128;box-shadow:2px 0 4px rgba(0,0,0,0.2)}'
+      + 'html.dark tr[data-expected-row] .probe-sticky-col{background:#21262d}'
+      + 'html.dark .probe-server-row:hover .probe-sticky-col{background:#161b22}'
+      + 'html.dark .probe-server-row.probe-row-active .probe-sticky-col{background:#2a3a50}'
+      // Collapsible groups
+      + '.probe-group-header{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px}'
+      + '.probe-group-chevron{display:inline-block;transition:transform 0.2s;font-size:0.8em}'
+      + '.probe-group-chevron.collapsed{transform:rotate(-90deg)}'
+      + '.probe-group-body{overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease;max-height:10000px;opacity:1}'
+      + '.probe-group-body.collapsed{max-height:0;opacity:0}'
+      + '.probe-toggle-all{display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;border-radius:20px;cursor:pointer;'
+      + 'border:1px solid #d0d7de;background:#f6f8fa;color:#24292f;margin-bottom:8px;transition:all 0.15s}'
+      + '.probe-toggle-all:hover{background:#eef1f5}'
+      + 'html.dark .probe-toggle-all{border-color:#30363d;background:#21262d;color:#c9d1d9}'
+      + 'html.dark .probe-toggle-all:hover{background:#30363d}';
     var style = document.createElement('style');
     style.textContent = css;
     document.head.appendChild(style);
 
+    // Truncation detection for raw request/response (8192-byte cap)
+    function isTruncated(raw) {
+      if (!raw || raw.indexOf('[Truncated') !== -1) return false;
+      return raw.length > 500 && raw.charAt(raw.length - 1) !== '\n';
+    }
+
     // Tooltip hover handler (delegated)
     var tip = null;
+    var tipTrigger = null;
+    function dismissTip() { if (tip) { tip.remove(); tip = null; tipTrigger = null; } }
     document.addEventListener('mouseover', function (e) {
+      // If mouse moved into the tooltip itself, keep it open
+      if (tip && tip.contains(e.target)) return;
       var target = e.target.closest('[data-tooltip]');
-      if (!target) return;
-      if (tip) { tip.remove(); tip = null; }
+      if (!target) { dismissTip(); return; }
+      if (target === tipTrigger) return; // already showing for this element
+      dismissTip();
       var text = target.getAttribute('data-tooltip');
       if (!text) return;
+      tipTrigger = target;
       tip = document.createElement('div');
       tip.className = 'probe-tooltip';
       var note = target.getAttribute('data-note');
       var req = target.getAttribute('data-request');
+      var truncated = isTruncated(req) || isTruncated(text);
       var html = '';
+      if (truncated) html += '<div style="color:#f0c674;font-family:sans-serif;font-weight:600;font-size:10px;margin-bottom:6px;white-space:normal;">[Truncated \u2014 payload exceeds display limit]</div>';
       if (note) html += '<div class="probe-note">' + escapeAttr(note) + '</div>';
       if (req) html += '<div class="probe-label">Request</div>' + escapeAttr(req);
       if (text) html += '<div class="probe-label">Response</div>' + escapeAttr(text);
       tip.innerHTML = html;
+      // Dismiss when mouse leaves the tooltip
+      tip.addEventListener('mouseleave', function (ev) {
+        if (tipTrigger && tipTrigger.contains(ev.relatedTarget)) return;
+        dismissTip();
+      });
       document.body.appendChild(tip);
       var rect = target.getBoundingClientRect();
       var tipRect = tip.getBoundingClientRect();
@@ -102,7 +143,10 @@ window.ProbeRender = (function () {
     });
     document.addEventListener('mouseout', function (e) {
       var target = e.target.closest('[data-tooltip]');
-      if (target && tip) { tip.remove(); tip = null; }
+      if (!target || target !== tipTrigger) return;
+      // Don't dismiss if mouse moved into the tooltip
+      if (tip && (e.relatedTarget === tip || tip.contains(e.relatedTarget))) return;
+      if (target && tip) { dismissTip(); }
     });
 
     // Modal click handler (delegated)
@@ -113,10 +157,12 @@ window.ProbeRender = (function () {
       var req = target.getAttribute('data-request');
       if (!text && !req) return;
       // Dismiss hover tooltip
-      if (tip) { tip.remove(); tip = null; }
+      dismissTip();
 
       var note = target.getAttribute('data-note');
+      var truncated = isTruncated(req) || isTruncated(text);
       var html = '<button class="probe-modal-close" title="Close">&times;</button>';
+      if (truncated) html += '<div style="color:#f0c674;font-family:sans-serif;font-weight:600;font-size:12px;margin-bottom:8px;white-space:normal;">[Truncated \u2014 payload exceeds display limit]</div>';
       if (note) html += '<div class="probe-note">' + escapeAttr(note) + '</div>';
       if (req) html += '<div class="probe-label">Request</div>' + escapeAttr(req);
       if (text) html += '<div class="probe-label">Response</div>' + escapeAttr(text);
@@ -472,7 +518,9 @@ window.ProbeRender = (function () {
     el.innerHTML = html;
   }
 
-  function renderTable(targetId, categoryKey, ctx, testIdFilter) {
+  var CAT_LABELS = { Compliance: 'Compliance', Smuggling: 'Smuggling', MalformedInput: 'Malformed Input', Normalization: 'Normalization' };
+
+  function renderTable(targetId, categoryKey, ctx, testIdFilter, tableLabel) {
     injectScrollStyle();
     var el = document.getElementById(targetId);
     if (!el) return;
@@ -500,7 +548,7 @@ window.ProbeRender = (function () {
 
     // Column header row (diagonal labels)
     t += '<thead><tr>';
-    t += '<th style="padding:4px 8px;text-align:left;vertical-align:bottom;min-width:100px;"></th>';
+    t += '<th class="probe-sticky-col" style="padding:4px 8px;text-align:left;vertical-align:bottom;min-width:100px;"></th>';
     orderedTests.forEach(function (tid, i) {
       var first = lookup[names[0]][tid];
       var isUnscored = first.scored === false;
@@ -520,8 +568,8 @@ window.ProbeRender = (function () {
     t += '</tr></thead><tbody>';
 
     // Expected row
-    t += '<tr style="background:#f6f8fa;">';
-    t += '<td style="padding:4px 8px;font-weight:700;font-size:11px;color:#656d76;">Expected</td>';
+    t += '<tr data-expected-row style="background:#f6f8fa;">';
+    t += '<td class="probe-sticky-col" style="padding:4px 8px;font-weight:700;font-size:11px;color:#656d76;">Expected</td>';
     orderedTests.forEach(function (tid) {
       var first = lookup[names[0]][tid];
       var isUnscored = first.scored === false;
@@ -534,14 +582,14 @@ window.ProbeRender = (function () {
     var serverLangs = {};
     if (ctx.servers) ctx.servers.forEach(function (sv) { serverLangs[sv.name] = sv.language; });
     names.forEach(function (n) {
-      t += '<tr class="probe-server-row">';
+      t += '<tr class="probe-server-row" data-server="' + escapeAttr(n) + '">';
       var lang = serverLangs[n];
       var langSuffix = lang ? ' <span style="font-weight:400;color:#656d76;font-size:10px;">(' + lang + ')</span>' : '';
       var srvUrl = serverUrl(n);
       var srvName = srvUrl
         ? '<a href="' + srvUrl + '" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">' + n + '</a>'
         : n;
-      t += '<td style="padding:4px 8px;font-weight:600;font-size:12px;white-space:nowrap;">' + srvName + langSuffix + '</td>';
+      t += '<td class="probe-sticky-col" style="padding:4px 8px;font-weight:600;font-size:12px;white-space:nowrap;">' + srvName + langSuffix + '</td>';
       orderedTests.forEach(function (tid) {
         var r = lookup[n] && lookup[n][tid];
         var isUnscored = lookup[names[0]][tid].scored === false;
@@ -561,16 +609,132 @@ window.ProbeRender = (function () {
     }
     el.innerHTML = t;
 
-    // Row click-to-highlight (one at a time)
+    // Row click → detail popup
     var rows = el.querySelectorAll('.probe-server-row');
     rows.forEach(function (row) {
       row.addEventListener('click', function (e) {
-        if (e.target.closest('a')) return;
-        var wasActive = row.classList.contains('probe-row-active');
-        rows.forEach(function (r) { r.classList.remove('probe-row-active'); });
-        if (!wasActive) row.classList.add('probe-row-active');
+        if (e.target.closest('a') || e.target.closest('[data-tooltip]')) return;
+
+        var svName = row.getAttribute('data-server');
+        if (!svName) return;
+
+        // Build vertical detail table for this server
+        var sUrl = serverUrl(svName);
+        var titleHtml = sUrl
+          ? '<a href="' + sUrl + '" style="color:#58a6ff;text-decoration:underline;text-underline-offset:2px;">' + escapeAttr(svName) + '</a>'
+          : escapeAttr(svName);
+
+        var pass = 0, warn = 0, fail = 0;
+        orderedTests.forEach(function (tid) {
+          var r = lookup[svName] && lookup[svName][tid];
+          if (!r || r.scored === false) return;
+          if (r.verdict === 'Pass') pass++;
+          else if (r.verdict === 'Warn') warn++;
+          else fail++;
+        });
+
+        var displayLabel = tableLabel || CAT_LABELS[categoryKey] || categoryKey;
+        var h = '<button class="probe-modal-close" title="Close">&times;</button>';
+        h += '<div style="font-size:11px;font-weight:600;color:#81a2be;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">' + escapeAttr(displayLabel) + '</div>';
+        h += '<div style="font-size:15px;font-weight:700;margin-bottom:4px;">' + titleHtml + '</div>';
+        h += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:12px;font-weight:600;">';
+        h += '<span style="color:' + PASS_BG + ';">' + pass + ' Pass</span>';
+        if (warn > 0) h += '<span style="color:' + WARN_BG + ';">' + warn + ' Warn</span>';
+        if (fail > 0) h += '<span style="color:' + FAIL_BG + ';">' + fail + ' Fail</span>';
+        h += '</div>';
+
+        h += '<table style="border-collapse:collapse;width:100%;font-size:12px;">';
+        h += '<thead><tr style="border-bottom:1px solid #333;">';
+        h += '<th style="padding:4px 8px;text-align:left;color:#81a2be;">Test</th>';
+        h += '<th style="padding:4px 8px;text-align:center;color:#81a2be;">Expected</th>';
+        h += '<th style="padding:4px 8px;text-align:center;color:#81a2be;">Got</th>';
+        h += '<th style="padding:4px 8px;text-align:left;color:#81a2be;">Description</th>';
+        h += '</tr></thead><tbody>';
+
+        orderedTests.forEach(function (tid) {
+          var first = lookup[names[0]][tid];
+          var r = lookup[svName] && lookup[svName][tid];
+          var isUnscored = first.scored === false;
+          var opacity = isUnscored ? 'opacity:0.55;' : '';
+          var shortLabel = tid.replace(/^(RFC\d+-[\d.]+-|COMP-|SMUG-|MAL-|NORM-)/, '');
+          var url = testUrl(tid);
+          var testLink = url
+            ? '<a href="' + url + '" style="color:#58a6ff;text-decoration:underline;text-underline-offset:2px;">' + shortLabel + '</a>'
+            : shortLabel;
+          if (isUnscored) testLink += '*';
+
+          var gotCell;
+          if (!r) {
+            gotCell = pill(SKIP_BG, '\u2014');
+          } else {
+            gotCell = pill(verdictBg(r.verdict), r.got, r.rawResponse, r.behavioralNote, r.rawRequest);
+          }
+
+          h += '<tr style="border-bottom:1px solid #2a2f38;' + opacity + '">';
+          h += '<td style="padding:4px 8px;font-weight:600;white-space:nowrap;">' + testLink + '</td>';
+          h += '<td style="text-align:center;padding:2px 4px;">' + pill(EXPECT_BG, first.expected.replace(/ or close/g, '/\u2715').replace(/\//g, '/\u200B')) + '</td>';
+          h += '<td style="text-align:center;padding:2px 4px;">' + gotCell + '</td>';
+          h += '<td style="padding:4px 8px;color:#999;white-space:normal;max-width:300px;">' + (first.description || '') + '</td>';
+          h += '</tr>';
+        });
+        h += '</tbody></table>';
+
+        var overlay = document.createElement('div');
+        overlay.className = 'probe-modal-overlay';
+        var modal = document.createElement('div');
+        modal.className = 'probe-modal';
+        modal.style.maxWidth = '800px';
+        modal.style.whiteSpace = 'normal';
+        modal.innerHTML = h;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        modal.querySelector('.probe-modal-close').addEventListener('click', function () { overlay.remove(); });
+        overlay.addEventListener('click', function (ev) { if (ev.target === overlay) overlay.remove(); });
+        function onKey(ev) {
+          if (ev.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+        }
+        document.addEventListener('keydown', onKey);
       });
     });
+  }
+
+  // ── Collapsible-group wiring helper ────────────────────────────
+  function wireCollapsible(el, targetId) {
+    var headers = el.querySelectorAll('.probe-group-header');
+    headers.forEach(function (hdr) {
+      hdr.addEventListener('click', function () {
+        var groupId = hdr.getAttribute('data-group');
+        var body = document.getElementById(groupId);
+        var chevron = hdr.querySelector('.probe-group-chevron');
+        if (body) body.classList.toggle('collapsed');
+        if (chevron) chevron.classList.toggle('collapsed');
+        updateToggleAllLabel(el, targetId);
+      });
+    });
+    var toggleBtn = el.querySelector('.probe-toggle-all');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        var bodies = el.querySelectorAll('.probe-group-body');
+        var chevrons = el.querySelectorAll('.probe-group-chevron');
+        var allCollapsed = Array.prototype.every.call(bodies, function (b) { return b.classList.contains('collapsed'); });
+        bodies.forEach(function (b) {
+          if (allCollapsed) b.classList.remove('collapsed'); else b.classList.add('collapsed');
+        });
+        chevrons.forEach(function (c) {
+          if (allCollapsed) c.classList.remove('collapsed'); else c.classList.add('collapsed');
+        });
+        updateToggleAllLabel(el, targetId);
+      });
+    }
+  }
+
+  function updateToggleAllLabel(container, targetId) {
+    var btn = container.querySelector('.probe-toggle-all[data-target="' + targetId + '"]');
+    if (!btn) return;
+    var bodies = container.querySelectorAll('.probe-group-body');
+    var allCollapsed = Array.prototype.every.call(bodies, function (b) { return b.classList.contains('collapsed'); });
+    btn.textContent = allCollapsed ? 'Expand All' : 'Collapse All';
   }
 
   // ── Sub-table renderer ─────────────────────────────────────────
@@ -594,17 +758,20 @@ window.ProbeRender = (function () {
       allGroups.push({ key: 'other', label: 'Other', testIds: ungrouped });
     }
 
-    var html = '';
+    var html = '<button class="probe-toggle-all" data-target="' + targetId + '">Collapse All</button>';
     allGroups.forEach(function (g) {
       var divId = targetId + '-' + g.key;
-      html += '<h3 style="margin-top:1.5em;margin-bottom:0.3em;">' + g.label + '</h3>';
-      html += '<div id="' + divId + '"></div>';
+      html += '<h3 class="probe-group-header" data-group="' + divId + '" style="margin-top:1.5em;margin-bottom:0.3em;">'
+        + '<span class="probe-group-chevron">\u25BC</span>' + g.label + '</h3>';
+      html += '<div class="probe-group-body" id="' + divId + '"></div>';
     });
     el.innerHTML = html;
+    var catLabel = CAT_LABELS[categoryKey] || categoryKey;
     allGroups.forEach(function (g) {
       var divId = targetId + '-' + g.key;
-      renderTable(divId, categoryKey, ctx, g.testIds);
+      renderTable(divId, categoryKey, ctx, g.testIds, catLabel + ' \u2014 ' + g.label);
     });
+    wireCollapsible(el, targetId);
   }
 
   // ── Language filter ────────────────────────────────────────────

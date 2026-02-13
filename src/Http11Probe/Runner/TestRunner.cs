@@ -79,7 +79,9 @@ public sealed class TestRunner
 
             // Send the primary payload
             var payload = testCase.PayloadFactory(context);
-            var rawRequest = Encoding.ASCII.GetString(payload, 0, Math.Min(payload.Length, 8192));
+            var rawRequest = payload.Length > 8192
+                ? Encoding.ASCII.GetString(payload, 0, 8192) + $"\n\n[Truncated — showing 8,192 of {payload.Length:N0} bytes]"
+                : Encoding.ASCII.GetString(payload);
             await client.SendAsync(payload);
 
             // Read primary response

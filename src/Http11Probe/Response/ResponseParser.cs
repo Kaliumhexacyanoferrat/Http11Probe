@@ -90,7 +90,9 @@ public static class ResponseParser
             }
         }
 
-        var rawResponse = text.Length > 8192 ? text[..8192] : text;
+        var rawResponse = text.Length > 8192
+            ? text[..8192] + $"\n\n[Truncated — showing 8,192 of {text.Length:N0} bytes]"
+            : text;
 
         return new HttpResponse
         {
