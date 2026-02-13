@@ -34,16 +34,16 @@ using var app = HttpServer.CreateBuilder()
     .UseListeningPort($"http://+:{port}/")
     .Build();
 
-app.Router.SetRoute(RouteMethod.Any, "/echo", request =>
-{
-    var sb = new System.Text.StringBuilder();
-    foreach (var h in request.Headers)
-        sb.AppendLine($"{h.Key}: {h.Value}");
-    return new HttpResponse(200).WithContent(sb.ToString());
-});
-
 app.Router.SetRoute(RouteMethod.Any, Route.AnyPath, request =>
 {
+    if (request.Path == "/echo")
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var h in request.Headers)
+            foreach (var val in h.Value)
+                sb.AppendLine($"{h.Key}: {val}");
+        return new HttpResponse(200).WithContent(sb.ToString());
+    }
     if (request.Method == HttpMethod.Post && request.Body is not null)
     {
         var body = request.Body;

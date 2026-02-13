@@ -234,9 +234,9 @@ jobs:
 
         import re
         def short(tid):
-            return re.sub(r'^(RFC\d+-[\d.]+-|COMP-|SMUG-|MAL-)', '', tid)
+            return re.sub(r'^(RFC\d+-[\d.]+-|COMP-|SMUG-|MAL-|NORM-)', '', tid)
 
-        for cat_name, title in [('Compliance', 'Compliance'), ('Smuggling', 'Smuggling'), ('MalformedInput', 'Malformed Input')]:
+        for cat_name, title in [('Compliance', 'Compliance'), ('Smuggling', 'Smuggling'), ('MalformedInput', 'Malformed Input'), ('Normalization', 'Header Normalization')]:
             cat_tests = [tid for tid in test_ids if lookup[names[0]][tid]['category'] == cat_name]
             if not cat_tests:
                 continue

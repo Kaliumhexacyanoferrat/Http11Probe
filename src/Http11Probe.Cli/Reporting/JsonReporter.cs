@@ -21,7 +21,7 @@ public static class JsonReporter
             summary = new
             {
                 total = report.Results.Count,
-                scored = report.PassCount + report.FailCount,
+                scored = report.ScoredCount,
                 passed = report.PassCount,
                 failed = report.FailCount,
                 warnings = report.WarnCount,
