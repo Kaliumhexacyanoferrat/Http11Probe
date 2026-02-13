@@ -1,4 +1,12 @@
-use actix_web::{web, App, HttpServer, HttpRequest, HttpResponse};
+use actix_web::{web, App, HttpServer, HttpRequest, HttpResponse, Responder};
+
+async fn echo(req: HttpRequest) -> impl Responder {
+    let mut body = String::new();
+    for (name, value) in req.headers() {
+        body.push_str(&format!("{}: {}\n", name, value.to_str().unwrap_or("")));
+    }
+    HttpResponse::Ok().content_type("text/plain").body(body)
+}
 
 async fn handler(req: HttpRequest, body: web::Bytes) -> HttpResponse {
     if req.method() == actix_web::http::Method::POST {
@@ -20,7 +28,9 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or(8080);
 
     HttpServer::new(|| {
-        App::new().default_service(web::to(handler))
+        App::new()
+            .route("/echo", web::to(echo))
+            .default_service(web::to(handler))
     })
     .bind(("0.0.0.0", port))?
     .run()

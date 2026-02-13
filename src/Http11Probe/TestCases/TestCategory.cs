@@ -6,5 +6,6 @@ public enum TestCategory
     Smuggling,
     MalformedInput,
     ResourceLimits,
-    Injection
+    Injection,
+    Normalization
 }

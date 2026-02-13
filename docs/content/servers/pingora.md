@@ -48,6 +48,25 @@ impl ProxyHttp for OkProxy {
         session: &mut Session,
         _ctx: &mut Self::CTX,
     ) -> Result<bool> {
+        let is_echo = session.req_header().uri.path() == "/echo";
+        if is_echo {
+            let mut body_str = String::new();
+            for (name, value) in session.req_header().headers.iter() {
+                body_str.push_str(&format!("{}: {}\n", name, value.to_str().unwrap_or("")));
+            }
+            let body = Bytes::from(body_str);
+            let mut header = ResponseHeader::build(200, None)?;
+            header.insert_header("Content-Type", "text/plain")?;
+            header.insert_header("Content-Length", &body.len().to_string())?;
+            session
+                .write_response_header(Box::new(header), false)
+                .await?;
+            session
+                .write_response_body(Some(body), true)
+                .await?;
+            return Ok(true);
+        }
+
         let is_post = session.req_header().method == pingora::http::Method::POST;
         let body = if is_post {
             let mut buf = Vec::new();

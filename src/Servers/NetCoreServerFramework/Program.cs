@@ -21,7 +21,17 @@ class OkHttpSession : HttpSession
 
     protected override void OnReceivedRequest(HttpRequest request)
     {
-        if (request.Method == "POST" && request.Body.Length > 0)
+        if (request.Url == "/echo")
+        {
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < request.Headers; i++)
+            {
+                var (name, value) = request.Header(i);
+                sb.AppendLine($"{name}: {value}");
+            }
+            SendResponseAsync(Response.MakeOkResponse(200).SetBody(sb.ToString()));
+        }
+        else if (request.Method == "POST" && request.Body.Length > 0)
             SendResponseAsync(Response.MakeOkResponse(200).SetBody(request.Body));
         else
             SendResponseAsync(Response.MakeOkResponse(200).SetBody("OK"));

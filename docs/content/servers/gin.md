@@ -28,6 +28,7 @@ package main
 import (
 	"io"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,6 +41,15 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
+	r.Any("/echo", func(c *gin.Context) {
+		var sb strings.Builder
+		for name, values := range c.Request.Header {
+			for _, v := range values {
+				sb.WriteString(name + ": " + v + "\n")
+			}
+		}
+		c.Data(200, "text/plain", []byte(sb.String()))
+	})
 	r.NoRoute(func(c *gin.Context) {
 		if c.Request.Method == "POST" {
 			body, _ := io.ReadAll(c.Request.Body)

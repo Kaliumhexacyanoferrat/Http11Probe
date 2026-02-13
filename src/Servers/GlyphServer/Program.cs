@@ -137,6 +137,16 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
                 var path = Encoding.ASCII.GetString(request.Path.Span);
                 var framing = HardenedParser.DetectBodyFraming(request);
 
+                // Extract headers while slices are still valid (before advancing).
+                var headerPairs = new List<KeyValuePair<string, string>>();
+                for (int i = 0; i < request.Headers.Count; i++)
+                {
+                    var kv = request.Headers[i];
+                    headerPairs.Add(new KeyValuePair<string, string>(
+                        Encoding.ASCII.GetString(kv.Key.Span),
+                        Encoding.ASCII.GetString(kv.Value.Span)));
+                }
+
                 // Now safe to advance past the header bytes.
                 reader.AdvanceTo(headerBuffer.GetPosition(headerByteCount));
 
@@ -240,7 +250,7 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
 
                 // ── Phase 5: send response ─────────────────────────
                 var capturedBody = bodyBytes.Length > 0 ? Encoding.ASCII.GetString(bodyBytes.ToArray()) : null;
-                var responseBytes = BuildResponse(method, path, capturedBody);
+                var responseBytes = BuildResponse(method, path, capturedBody, headerPairs);
                 await stream.WriteAsync(responseBytes, ct);
             }
         }
@@ -263,8 +273,15 @@ static async Task HandleClientAsync(TcpClient client, CancellationToken ct)
     }
 }
 
-static byte[] BuildResponse(string method, string path, string? echoBody)
+static byte[] BuildResponse(string method, string path, string? echoBody, List<KeyValuePair<string, string>> headers)
 {
+    if (path == "/echo")
+    {
+        var sb = new StringBuilder();
+        foreach (var h in headers)
+            sb.AppendLine($"{h.Key}: {h.Value}");
+        return MakeResponse(200, "OK", sb.ToString());
+    }
     var body = method == "POST" && echoBody is not null
         ? echoBody
         : $"Hello from GlyphServer\r\nMethod: {method}\r\nPath: {path}\r\n";

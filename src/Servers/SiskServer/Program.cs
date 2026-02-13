@@ -7,6 +7,14 @@ using var app = HttpServer.CreateBuilder()
     .UseListeningPort($"http://+:{port}/")
     .Build();
 
+app.Router.SetRoute(RouteMethod.Any, "/echo", request =>
+{
+    var sb = new System.Text.StringBuilder();
+    foreach (var h in request.Headers)
+        sb.AppendLine($"{h.Key}: {h.Value}");
+    return new HttpResponse(200).WithContent(sb.ToString());
+});
+
 app.Router.SetRoute(RouteMethod.Any, Route.AnyPath, request =>
 {
     if (request.Method == HttpMethod.Post && request.Body is not null)

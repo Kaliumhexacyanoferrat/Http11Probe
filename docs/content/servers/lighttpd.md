@@ -13,7 +13,8 @@ FROM alpine:3.20
 RUN apk add --no-cache lighttpd
 COPY src/Servers/LighttpdServer/lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY src/Servers/LighttpdServer/index.cgi /var/www/index.cgi
-RUN chmod +x /var/www/index.cgi
+COPY src/Servers/LighttpdServer/echo.cgi /var/www/echo.cgi
+RUN chmod +x /var/www/index.cgi /var/www/echo.cgi
 EXPOSE 8080
 CMD ["lighttpd", "-D", "-f", "/etc/lighttpd/lighttpd.conf"]
 ```
@@ -24,19 +25,25 @@ CMD ["lighttpd", "-D", "-f", "/etc/lighttpd/lighttpd.conf"]
 server.document-root = "/var/www"
 server.port = 8080
 index-file.names = ("index.cgi")
-server.modules += ("mod_cgi")
+server.modules += ("mod_cgi", "mod_alias")
 cgi.assign = (".cgi" => "")
 server.error-handler = "/index.cgi"
+alias.url = ("/echo" => "/var/www/echo.cgi")
 ```
 
-## Source — `index.cgi`
+## Source — `echo.cgi`
 
 ```bash
 #!/bin/sh
 printf 'Content-Type: text/plain\r\n\r\n'
-if [ "$REQUEST_METHOD" = "POST" ]; then
-    cat
-else
-    printf 'OK'
+env | grep '^HTTP_' | while IFS='=' read -r key value; do
+    name=$(echo "$key" | sed 's/^HTTP_//;s/_/-/g')
+    printf '%s: %s\n' "$name" "$value"
+done
+if [ -n "$CONTENT_TYPE" ]; then
+    printf 'Content-Type: %s\n' "$CONTENT_TYPE"
+fi
+if [ -n "$CONTENT_LENGTH" ]; then
+    printf 'Content-Length: %s\n' "$CONTENT_LENGTH"
 fi
 ```

@@ -31,6 +31,14 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 app.UseServiceStack(new AppHost());
+app.Map("/echo", (HttpContext ctx) =>
+{
+    var sb = new System.Text.StringBuilder();
+    foreach (var h in ctx.Request.Headers)
+        foreach (var v in h.Value)
+            sb.AppendLine($"{h.Key}: {v}");
+    return Results.Text(sb.ToString());
+});
 app.MapFallback(async (HttpContext ctx) =>
 {
     if (ctx.Request.Method == "POST")

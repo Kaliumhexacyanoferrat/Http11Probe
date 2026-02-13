@@ -30,6 +30,14 @@ ENTRYPOINT ["ntex-server", "8080"]
 use ntex::web;
 use ntex::util::Bytes;
 
+async fn echo(req: web::HttpRequest) -> impl web::Responder {
+    let mut body = String::new();
+    for (name, value) in req.headers() {
+        body.push_str(&format!("{}: {}\n", name, value.to_str().unwrap_or("")));
+    }
+    web::HttpResponse::Ok().content_type("text/plain").body(body)
+}
+
 async fn handler(req: web::HttpRequest, body: Bytes) -> web::HttpResponse {
     if req.method() == ntex::http::Method::POST {
         web::HttpResponse::Ok()
@@ -50,7 +58,9 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or(8080);
 
     web::server(|| {
-        web::App::new().default_service(web::to(handler))
+        web::App::new()
+            .route("/echo", web::to(echo))
+            .default_service(web::to(handler))
     })
     .bind(("0.0.0.0", port))?
     .run()

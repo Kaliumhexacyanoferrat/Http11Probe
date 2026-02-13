@@ -15,6 +15,27 @@ var waitHandle = new ManualResetEvent(false);
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; waitHandle.Set(); };
 waitHandle.WaitOne();
 
+public class EchoModule : NancyModule
+{
+    public EchoModule() : base("/echo")
+    {
+        Get("/", _ => EchoHeaders());
+        Post("/", _ => EchoHeaders());
+        Put("/", _ => EchoHeaders());
+        Delete("/", _ => EchoHeaders());
+        Patch("/", _ => EchoHeaders());
+    }
+
+    private string EchoHeaders()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var h in Request.Headers)
+            foreach (var v in h.Value)
+                sb.AppendLine($"{h.Key}: {v}");
+        return sb.ToString();
+    }
+}
+
 public class HomeModule : NancyModule
 {
     public HomeModule()

@@ -1,5 +1,11 @@
 http:
   routers:
+    echo:
+      rule: "Path(`/echo`)"
+      entryPoints:
+        - web
+      service: echo-svc
+
     catchall:
       rule: "PathPrefix(`/`)"
       entryPoints:
@@ -7,6 +13,12 @@ http:
       middlewares:
         - static-ok
       service: noop@internal
+
+  services:
+    echo-svc:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:9090"
 
   middlewares:
     static-ok:

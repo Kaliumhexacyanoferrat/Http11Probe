@@ -3,7 +3,16 @@ const http = require('http');
 const port = parseInt(process.argv[2] || '8080', 10);
 
 const server = http.createServer((req, res) => {
-    if (req.method === 'POST') {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    if (url.pathname === '/echo') {
+        let body = '';
+        for (const [name, value] of Object.entries(req.headers)) {
+            if (Array.isArray(value)) value.forEach(v => body += name + ': ' + v + '\n');
+            else body += name + ': ' + value + '\n';
+        }
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(body);
+    } else if (req.method === 'POST') {
         const chunks = [];
         req.on('data', (chunk) => chunks.push(chunk));
         req.on('end', () => {

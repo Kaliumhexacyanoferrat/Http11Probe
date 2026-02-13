@@ -25,6 +25,13 @@ from werkzeug.routing import Rule
 
 app = Flask(__name__)
 
+@app.route('/echo', methods=['GET','POST','PUT','DELETE','PATCH','OPTIONS','HEAD'])
+def echo():
+    lines = []
+    for name, value in request.headers:
+        lines.append(f"{name}: {value}")
+    return '\n'.join(lines) + '\n', 200, {'Content-Type': 'text/plain'}
+
 app.url_map.add(Rule('/', defaults={"path": ""}, endpoint='catch_all'))
 app.url_map.add(Rule('/<path:path>', endpoint='catch_all'))
 

@@ -107,6 +107,13 @@ internal static class DocsUrlMap
             return BaseUrl + "malformed-input/" + suffix;
         }
 
+        // NORM-* → normalization/{suffix}
+        if (testId.StartsWith("NORM-", StringComparison.OrdinalIgnoreCase))
+        {
+            var suffix = testId[5..].ToLowerInvariant();
+            return BaseUrl + "normalization/" + suffix;
+        }
+
         return null;
     }
 }
