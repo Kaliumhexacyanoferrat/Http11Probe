@@ -2,6 +2,25 @@
 
 All notable changes to Http11Probe are documented in this file.
 
+## [Unreleased]
+
+### Added
+- **9 new RFC 9110 compliance tests** sourced from [mohammed90/http-compliance-testing](https://github.com/mohammed90/http-compliance-testing):
+  - `COMP-HEAD-NO-BODY` — HEAD response must not contain a message body (RFC 9110 §9.3.2, MUST)
+  - `COMP-UNKNOWN-METHOD` — unrecognized method should be rejected with 501/405 (RFC 9110 §9.1, SHOULD)
+  - `COMP-405-ALLOW` — 405 response must include Allow header (RFC 9110 §15.5.6, MUST)
+  - `COMP-DATE-HEADER` — origin server must include Date header in responses (RFC 9110 §6.6.1, MUST)
+  - `COMP-NO-1XX-HTTP10` — server must not send 1xx to HTTP/1.0 client (RFC 9110 §15.2, MUST NOT)
+  - `COMP-NO-CL-IN-204` — Content-Length forbidden in 204 responses (RFC 9110 §8.6, MUST NOT)
+  - `SMUG-CL-COMMA-TRIPLE` — three comma-separated identical CL values (RFC 9110 §8.6, unscored)
+  - `COMP-OPTIONS-ALLOW` — OPTIONS response should include Allow header (RFC 9110 §9.3.7, SHOULD)
+  - `COMP-CONTENT-TYPE` — response with content should include Content-Type (RFC 9110 §8.3, SHOULD)
+
+### Changed
+- **AGENTS.md** — added Step 5 (RFC Requirement Dashboard) to the "Add a new test" task
+- **RFC Requirement Dashboard** — updated with all 9 new tests, counts, and cross-references
+- **Landing page cards** — removed hardcoded test count from RFC Requirement Dashboard subtitle
+
 ## [2026-02-14]
 
 ### Added

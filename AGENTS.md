@@ -10,7 +10,7 @@ Http11Probe is an HTTP/1.1 compliance and security tester. It sends raw TCP requ
 
 ## TASK A: Add a new test
 
-Adding a test requires changes to **4 locations** (sometimes 3 if URL mapping is automatic).
+Adding a test requires changes to **5 locations** (sometimes 4 if URL mapping is automatic).
 
 ### Step 1 — Add the test case to the suite file
 
@@ -214,6 +214,26 @@ Find the `{{</* cards */>}}` block and add a new card entry. Place scored tests 
 ```
 
 The `link` value is the filename without `.md`.
+
+### Step 5 — Add a row to the RFC Requirement Dashboard
+
+**File:** `docs/content/docs/rfc-requirement-dashboard.md`
+
+This page classifies every test by its RFC 2119 requirement level. You must:
+
+1. **Add a row** to the correct table based on the test's requirement level:
+   - `MUST` / `MUST NOT` → "MUST-Level Requirements" table (use the "Reject with 400" sub-table if the RFC explicitly mandates 400, otherwise the "Reject (400 or Connection Close Acceptable)" sub-table)
+   - `SHOULD` / `SHOULD NOT` → "SHOULD-Level Requirements" table
+   - `MAY` → "MAY-Level Requirements" table
+   - `Scored = false` → "Unscored Tests" table (regardless of RFC keyword)
+
+2. **Update the counts** in:
+   - The summary table at the top (increment the matching requirement level)
+   - The total test count in both the `description` frontmatter and the "Total: N tests" line
+   - The "Requirement Level by Suite" section (increment the matching suite + level)
+   - The "RFC Section Cross-Reference" table (increment existing section count or add a new row)
+
+3. **Include** the test ID, suite name, RFC link, and an exact RFC quote with the keyword bolded (e.g., `**MUST**`).
 
 ### Verification checklist
 

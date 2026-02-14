@@ -928,6 +928,31 @@ public static class SmugglingSuite
 
         yield return new TestCase
         {
+            Id = "SMUG-CL-COMMA-TRIPLE",
+            Description = "Content-Length with three comma-separated identical values — extended merge test",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9110 §8.6",
+            Scored = false,
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5, 5, 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "400 or 2xx",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode == 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
             Id = "SMUG-CHUNKED-WITH-PARAMS",
             Description = "Transfer-Encoding: chunked;ext=val — parameters on chunked encoding",
             Category = TestCategory.Smuggling,

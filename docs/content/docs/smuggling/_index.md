@@ -113,6 +113,7 @@ For these, `400` is the strict/safe response and `2xx` is RFC-compliant. Http11P
   {{< card link="te-case-mismatch" title="TE-CASE-MISMATCH" subtitle="'Chunked' vs 'chunked'. Case is valid per RFC." >}}
   {{< card link="transfer-encoding-underscore" title="TRANSFER_ENCODING" subtitle="Underscore instead of hyphen in header name." >}}
   {{< card link="cl-comma-same" title="CL-COMMA-SAME" subtitle="Comma-separated identical CL values." >}}
+  {{< card link="cl-comma-triple" title="CL-COMMA-TRIPLE" subtitle="Three comma-separated identical CL values." >}}
   {{< card link="chunked-with-params" title="CHUNKED-WITH-PARAMS" subtitle="Parameters on chunked encoding." >}}
   {{< card link="expect-100-cl" title="EXPECT-100-CL" subtitle="Expect: 100-continue with Content-Length." >}}
   {{< card link="trailer-cl" title="TRAILER-CL" subtitle="Content-Length in chunked trailers (prohibited)." >}}
