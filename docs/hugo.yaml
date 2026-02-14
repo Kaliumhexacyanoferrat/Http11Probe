@@ -81,6 +81,14 @@ params:
   footer:
     displayCopyright: false
     displayPoweredBy: false
+  comments:
+    enable: true
+    type: giscus
+    giscus:
+      repo: MDA2AV/Http11Probe
+      repoId: R_kgDORKyHAA
+      category: General
+      categoryId: DIC_kwDORKyHAM4C2UBf
   editURL:
     enable: true
     base: https://github.com/MDA2AV/Http11Probe/edit/main/docs/content
