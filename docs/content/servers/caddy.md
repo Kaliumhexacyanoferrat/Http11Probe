@@ -18,6 +18,18 @@ COPY src/Servers/CaddyServer/echo.html /srv/echo.html
 
 ```text
 :8080 {
+    request_body {
+        max_size 1MB
+    }
+
+    @post_root {
+        method POST
+        path /
+    }
+    handle @post_root {
+        respond "{http.request.body}" 200
+    }
+
     handle /echo {
         root * /srv
         templates {
@@ -26,6 +38,7 @@ COPY src/Servers/CaddyServer/echo.html /srv/echo.html
         rewrite * /echo.html
         file_server
     }
+
     respond "OK" 200
 }
 ```
