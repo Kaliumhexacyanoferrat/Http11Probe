@@ -90,25 +90,28 @@ public static class ConsoleReporter
 
         var prev = Console.ForegroundColor;
         Console.Write("  Score: ");
-        Console.ForegroundColor = report.FailCount == 0 && report.WarnCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
-        Console.Write($"{report.PassCount}/{report.ScoredCount}");
+        Console.ForegroundColor = report.FailCount == 0 ? ConsoleColor.Green : ConsoleColor.Red;
+        Console.Write($"{report.PassCount + report.WarnCount}/{report.ScoredCount}");
         Console.ForegroundColor = prev;
 
-        if (report.FailCount > 0)
+        if (report.FailCount > 0 || report.WarnCount > 0)
         {
             Console.Write(" (");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write($"{report.FailCount} failed");
-            Console.ForegroundColor = prev;
+            if (report.FailCount > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($"{report.FailCount} failed");
+                Console.ForegroundColor = prev;
+            }
+            if (report.FailCount > 0 && report.WarnCount > 0)
+                Console.Write(", ");
+            if (report.WarnCount > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write($"{report.WarnCount} warnings");
+                Console.ForegroundColor = prev;
+            }
             Console.Write(")");
-        }
-
-        if (report.WarnCount > 0)
-        {
-            Console.Write("  ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{report.WarnCount} warnings");
-            Console.ForegroundColor = prev;
         }
 
         if (report.ErrorCount > 0)
