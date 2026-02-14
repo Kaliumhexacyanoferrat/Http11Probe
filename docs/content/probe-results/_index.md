@@ -17,7 +17,8 @@ These results are from CI runs (`ubuntu-latest`). Click a **server name** to vie
 {{< /callout >}}
 
 <div id="lang-filter" style="margin-bottom:6px;"></div>
-<div id="cat-filter" style="margin-bottom:16px;"></div>
+<div id="cat-filter" style="margin-bottom:6px;"></div>
+<div id="rfc-level-filter" style="margin-bottom:16px;"></div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
 
 **Pass** — the server gave the correct response. For most tests this means rejecting a malformed request with `400` or closing the connection. For body handling tests it means successfully reading the request body and returning `2xx`.
@@ -38,12 +39,12 @@ These results are from CI runs (`ubuntu-latest`). Click a **server name** to vie
   }
   var langFiltered = window.PROBE_DATA;
   var catFilter = null;
+  var rfcLevelFilter = null;
 
   function rerender() {
     var data = langFiltered;
-    if (catFilter) {
-      data = ProbeRender.filterByCategory(data, catFilter);
-    }
+    if (catFilter) data = ProbeRender.filterByCategory(data, catFilter);
+    if (rfcLevelFilter) data = ProbeRender.filterByRfcLevel(data, rfcLevelFilter);
     ProbeRender.renderSummary('probe-summary', data);
   }
 
@@ -54,6 +55,10 @@ These results are from CI runs (`ubuntu-latest`). Click a **server name** to vie
   });
   ProbeRender.renderCategoryFilter('cat-filter', function (categories) {
     catFilter = categories;
+    rerender();
+  });
+  ProbeRender.renderRfcLevelFilter('rfc-level-filter', window.PROBE_DATA, function (l) {
+    rfcLevelFilter = l;
     rerender();
   });
 })();
