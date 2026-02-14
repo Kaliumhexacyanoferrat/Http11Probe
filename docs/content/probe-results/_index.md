@@ -16,9 +16,11 @@ HTTP/1.1 compliance comparison across frameworks. Each test sends a specific mal
 These results are from CI runs (`ubuntu-latest`). Click a **server name** to view its Dockerfile and source code. Click on the **Compliance**, **Smuggling**, **Malformed Input**, or **Normalization** tabs above for detailed results per category, where you can click any **result cell** to see the full HTTP request and response.
 {{< /callout >}}
 
-<div id="lang-filter" style="margin-bottom:6px;"></div>
-<div id="cat-filter" style="margin-bottom:6px;"></div>
-<div id="rfc-level-filter" style="margin-bottom:16px;"></div>
+<div class="probe-filters">
+  <div id="lang-filter"></div>
+  <div id="cat-filter"></div>
+  <div id="rfc-level-filter"></div>
+</div>
 <div id="probe-summary"><p><em>Loading probe data...</em></p></div>
 
 **Pass** — the server gave the correct response. For most tests this means rejecting a malformed request with `400` or closing the connection. For body handling tests it means successfully reading the request body and returning `2xx`.

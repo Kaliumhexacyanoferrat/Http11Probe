@@ -17,9 +17,11 @@ A well-implemented server should respond with `400 Bad Request`, `414 URI Too Lo
 <div class="probe-hint"><strong style="font-size:14px;">Result Cell</strong><br>Click to see the full HTTP request and response</div>
 </div>
 
+<div class="probe-filters">
 <div id="lang-filter"></div>
 <div id="method-filter"></div>
 <div id="rfc-level-filter"></div>
+</div>
 <div id="table-malformed"><p><em>Loading...</em></p></div>
 
 <script src="/Http11Probe/probe/data.js"></script>

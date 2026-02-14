@@ -23,9 +23,11 @@ Some tests are **unscored** (marked with `*`). These cover behaviors like case n
 <div class="probe-hint"><strong style="font-size:14px;">Result Cell</strong><br>Click to see the full HTTP request and response</div>
 </div>
 
+<div class="probe-filters">
 <div id="lang-filter"></div>
 <div id="method-filter"></div>
 <div id="rfc-level-filter"></div>
+</div>
 <div id="table-normalization"><p><em>Loading...</em></p></div>
 
 <script src="/Http11Probe/probe/data.js"></script>

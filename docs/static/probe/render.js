@@ -1,4 +1,22 @@
 // Shared probe rendering utilities
+(function injectFilterCSS() {
+  if (document.getElementById('probe-filter-css')) return;
+  var s = document.createElement('style');
+  s.id = 'probe-filter-css';
+  s.textContent = ''
+    + '.probe-filters{border:1px solid #d0d7de;border-radius:8px;padding:12px 16px;margin-bottom:16px;background:#f6f8fa}'
+    + '.dark .probe-filters{border-color:#30363d;background:#161b22}'
+    + '.probe-filters>div:not(:last-child){border-bottom:1px solid #d0d7de;padding-bottom:10px;margin-bottom:10px}'
+    + '.dark .probe-filters>div:not(:last-child){border-bottom-color:#30363d}'
+    + '.probe-filter-label{display:inline-block;width:80px;font-size:12px;font-weight:700;color:#656d76;white-space:nowrap}'
+    + '.dark .probe-filter-label{color:#8b949e}'
+    + '.probe-filter-btn{display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid #d0d7de;margin-right:6px;transition:all .15s;background:#fff;color:#24292f}'
+    + '.dark .probe-filter-btn{border-color:#30363d;background:#21262d;color:#c9d1d9}'
+    + '.probe-filter-btn.active{background:#0969da;color:#fff;border-color:#0969da}'
+    + '.dark .probe-filter-btn.active{background:#1f6feb;border-color:#1f6feb}';
+  document.head.appendChild(s);
+})();
+
 window.ProbeRender = (function () {
   var PASS_BG = '#1a7f37';
   var WARN_BG = '#9a6700';
@@ -663,7 +681,12 @@ window.ProbeRender = (function () {
     });
 
     var unscoredStart = scoredTests.length;
-    var t = '<div class="probe-scroll"><table class="probe-table" style="border-collapse:collapse;font-size:13px;white-space:nowrap;">';
+    var isTopLevel = !testIdFilter && !tableLabel;
+    var t = '';
+    if (isTopLevel) {
+      t += '<div class="probe-filter-wrap"><input class="probe-filter-input" type="text" placeholder="Filter by server or test name (comma-separated)\u2026"><span class="probe-filter-count"></span></div>';
+    }
+    t += '<div class="probe-scroll"><table class="probe-table" style="border-collapse:collapse;font-size:13px;white-space:nowrap;">';
 
     // Column header row (horizontal labels)
     t += '<thead><tr>';
@@ -882,6 +905,60 @@ window.ProbeRender = (function () {
         document.addEventListener('keydown', onKey);
       });
     });
+
+    // Wire filter input (top-level only)
+    if (isTopLevel) {
+      var filterInput = el.querySelector('.probe-filter-input');
+      var filterCount = el.querySelector('.probe-filter-count');
+      if (filterInput) {
+        function matchesAny(text, keywords) {
+          for (var k = 0; k < keywords.length; k++) {
+            if (text.indexOf(keywords[k]) !== -1) return true;
+          }
+          return false;
+        }
+        filterInput.addEventListener('input', function () {
+          var raw = filterInput.value.toLowerCase();
+          var keywords = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          var fRows = el.querySelectorAll('.probe-server-row');
+          var allCols = el.querySelectorAll('[data-test-label]');
+          var thCols = el.querySelectorAll('thead [data-test-label]');
+          if (keywords.length === 0) {
+            fRows.forEach(function (r) { r.style.display = ''; });
+            allCols.forEach(function (c) { c.style.display = ''; });
+            if (filterCount) filterCount.textContent = '';
+            return;
+          }
+          var serverMatches = 0;
+          fRows.forEach(function (r) {
+            var name = (r.getAttribute('data-server') || '').toLowerCase();
+            var lang = (r.getAttribute('data-language') || '').toLowerCase();
+            if (matchesAny(name, keywords) || matchesAny(lang, keywords)) serverMatches++;
+          });
+          var colMatchSet = {};
+          thCols.forEach(function (th) {
+            var label = th.getAttribute('data-test-label').toLowerCase();
+            if (matchesAny(label, keywords)) colMatchSet[th.getAttribute('data-test-label')] = true;
+          });
+          var colMatches = Object.keys(colMatchSet).length;
+          fRows.forEach(function (r) {
+            var name = (r.getAttribute('data-server') || '').toLowerCase();
+            var lang = (r.getAttribute('data-language') || '').toLowerCase();
+            r.style.display = (serverMatches === 0 || matchesAny(name, keywords) || matchesAny(lang, keywords)) ? '' : 'none';
+          });
+          allCols.forEach(function (c) {
+            var label = c.getAttribute('data-test-label');
+            c.style.display = (colMatches === 0 || colMatchSet[label]) ? '' : 'none';
+          });
+          if (filterCount) {
+            var parts = [];
+            if (serverMatches > 0) parts.push(serverMatches + ' server' + (serverMatches !== 1 ? 's' : ''));
+            if (colMatches > 0) parts.push(colMatches + ' test' + (colMatches !== 1 ? 's' : ''));
+            filterCount.textContent = parts.length > 0 ? parts.join(', ') : 'No matches';
+          }
+        });
+      }
+    }
   }
 
   // ── Collapsible-group wiring helper ────────────────────────────
@@ -1037,42 +1114,21 @@ window.ProbeRender = (function () {
     var langList = Object.keys(langs).sort();
     if (langList.length === 0) return;
 
-    var isDark = document.documentElement.classList.contains('dark');
-    var baseBg = isDark ? '#21262d' : '#f6f8fa';
-    var baseFg = isDark ? '#c9d1d9' : '#24292f';
-    var baseBorder = isDark ? '#30363d' : '#d0d7de';
-    var activeBg = isDark ? '#1f6feb' : '#0969da';
-
-    var btnStyle = 'display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;'
-      + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
-      + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
-
-    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
-    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
-    html += '<span style="' + labelStyle + '">Language:</span>';
-    html += '<button class="probe-lang-btn" data-lang="" style="' + btnStyle
-      + 'background:' + activeBg + ';color:#fff;border-color:' + activeBg + ';">All</button>';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;">';
+    html += '<span class="probe-filter-label">Language</span>';
+    html += '<button class="probe-filter-btn active" data-lang="">All</button>';
     langList.forEach(function (lang) {
-      html += '<button class="probe-lang-btn" data-lang="' + lang + '" style="' + btnStyle
-        + 'background:' + baseBg + ';color:' + baseFg + ';">' + lang + '</button>';
+      html += '<button class="probe-filter-btn" data-lang="' + lang + '">' + lang + '</button>';
     });
     html += '</div>';
     el.innerHTML = html;
 
-    var buttons = el.querySelectorAll('.probe-lang-btn');
+    var buttons = el.querySelectorAll('.probe-filter-btn');
     buttons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var lang = btn.getAttribute('data-lang');
         buttons.forEach(function (b) {
-          if (b === btn) {
-            b.style.background = activeBg;
-            b.style.color = '#fff';
-            b.style.borderColor = activeBg;
-          } else {
-            b.style.background = baseBg;
-            b.style.color = baseFg;
-            b.style.borderColor = baseBorder;
-          }
+          b.classList.toggle('active', b === btn);
         });
         if (!lang) {
           onChange({ commit: data.commit, servers: allServers });
@@ -1117,16 +1173,6 @@ window.ProbeRender = (function () {
     var el = document.getElementById(targetId);
     if (!el) return;
 
-    var isDark = document.documentElement.classList.contains('dark');
-    var baseBg = isDark ? '#21262d' : '#f6f8fa';
-    var baseFg = isDark ? '#c9d1d9' : '#24292f';
-    var baseBorder = isDark ? '#30363d' : '#d0d7de';
-    var activeBg = isDark ? '#1f6feb' : '#0969da';
-
-    var btnStyle = 'display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;'
-      + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
-      + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
-
     var filters = [
       { label: 'All', categories: null },
       { label: 'Compliance', categories: ['Compliance'] },
@@ -1135,32 +1181,20 @@ window.ProbeRender = (function () {
       { label: 'Normalization', categories: ['Normalization'] }
     ];
 
-    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
-    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
-    html += '<span style="' + labelStyle + '">Category:</span>';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;">';
+    html += '<span class="probe-filter-label">Category</span>';
     filters.forEach(function (f, i) {
-      var isActive = i === 0;
-      html += '<button class="probe-cat-btn" data-idx="' + i + '" style="' + btnStyle
-        + 'background:' + (isActive ? activeBg : baseBg) + ';color:' + (isActive ? '#fff' : baseFg)
-        + ';border-color:' + (isActive ? activeBg : baseBorder) + ';">' + f.label + '</button>';
+      html += '<button class="probe-filter-btn' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '">' + f.label + '</button>';
     });
     html += '</div>';
     el.innerHTML = html;
 
-    var buttons = el.querySelectorAll('.probe-cat-btn');
+    var buttons = el.querySelectorAll('.probe-filter-btn');
     buttons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.getAttribute('data-idx'));
         buttons.forEach(function (b) {
-          if (b === btn) {
-            b.style.background = activeBg;
-            b.style.color = '#fff';
-            b.style.borderColor = activeBg;
-          } else {
-            b.style.background = baseBg;
-            b.style.color = baseFg;
-            b.style.borderColor = baseBorder;
-          }
+          b.classList.toggle('active', b === btn);
         });
         onChange(filters[idx].categories);
       });
@@ -1208,42 +1242,21 @@ window.ProbeRender = (function () {
     var methods = Object.keys(methodSet).sort();
     if (methods.length === 0) return;
 
-    var isDark = document.documentElement.classList.contains('dark');
-    var baseBg = isDark ? '#21262d' : '#f6f8fa';
-    var baseFg = isDark ? '#c9d1d9' : '#24292f';
-    var baseBorder = isDark ? '#30363d' : '#d0d7de';
-    var activeBg = isDark ? '#1f6feb' : '#0969da';
-
-    var btnStyle = 'display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;'
-      + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
-      + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
-
-    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
-    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
-    html += '<span style="' + labelStyle + '">Method:</span>';
-    html += '<button class="probe-method-btn" data-method="" style="' + btnStyle
-      + 'background:' + activeBg + ';color:#fff;border-color:' + activeBg + ';">All</button>';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;">';
+    html += '<span class="probe-filter-label">Method</span>';
+    html += '<button class="probe-filter-btn active" data-method="">All</button>';
     methods.forEach(function (m) {
-      html += '<button class="probe-method-btn" data-method="' + m + '" style="' + btnStyle
-        + 'background:' + baseBg + ';color:' + baseFg + ';">' + m + '</button>';
+      html += '<button class="probe-filter-btn" data-method="' + m + '">' + m + '</button>';
     });
     html += '</div>';
     el.innerHTML = html;
 
-    var buttons = el.querySelectorAll('.probe-method-btn');
+    var buttons = el.querySelectorAll('.probe-filter-btn');
     buttons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var method = btn.getAttribute('data-method');
         buttons.forEach(function (b) {
-          if (b === btn) {
-            b.style.background = activeBg;
-            b.style.color = '#fff';
-            b.style.borderColor = activeBg;
-          } else {
-            b.style.background = baseBg;
-            b.style.color = baseFg;
-            b.style.borderColor = baseBorder;
-          }
+          b.classList.toggle('active', b === btn);
         });
         onChange(method || null);
       });
@@ -1298,42 +1311,21 @@ window.ProbeRender = (function () {
     var visibleLevels = levels.filter(function (l) { return presentLevels[l.key]; });
     if (visibleLevels.length === 0) return;
 
-    var isDark = document.documentElement.classList.contains('dark');
-    var baseBg = isDark ? '#21262d' : '#f6f8fa';
-    var baseFg = isDark ? '#c9d1d9' : '#24292f';
-    var baseBorder = isDark ? '#30363d' : '#d0d7de';
-    var activeBg = isDark ? '#1f6feb' : '#0969da';
-
-    var btnStyle = 'display:inline-block;padding:4px 12px;font-size:12px;font-weight:600;'
-      + 'border-radius:20px;cursor:pointer;border:1px solid ' + baseBorder + ';'
-      + 'margin-right:6px;margin-bottom:6px;transition:all 0.15s;';
-
-    var labelStyle = 'font-size:12px;font-weight:700;color:#656d76;margin-right:10px;white-space:nowrap;';
-    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:4px;">';
-    html += '<span style="' + labelStyle + '">RFC Level:</span>';
-    html += '<button class="probe-rfc-btn" data-level="" style="' + btnStyle
-      + 'background:' + activeBg + ';color:#fff;border-color:' + activeBg + ';">All</button>';
+    var html = '<div style="display:flex;align-items:center;flex-wrap:wrap;">';
+    html += '<span class="probe-filter-label">RFC Level</span>';
+    html += '<button class="probe-filter-btn active" data-level="">All</button>';
     visibleLevels.forEach(function (l) {
-      html += '<button class="probe-rfc-btn" data-level="' + l.key + '" style="' + btnStyle
-        + 'background:' + baseBg + ';color:' + baseFg + ';">' + l.label + '</button>';
+      html += '<button class="probe-filter-btn" data-level="' + l.key + '">' + l.label + '</button>';
     });
     html += '</div>';
     el.innerHTML = html;
 
-    var buttons = el.querySelectorAll('.probe-rfc-btn');
+    var buttons = el.querySelectorAll('.probe-filter-btn');
     buttons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var level = btn.getAttribute('data-level');
         buttons.forEach(function (b) {
-          if (b === btn) {
-            b.style.background = activeBg;
-            b.style.color = '#fff';
-            b.style.borderColor = activeBg;
-          } else {
-            b.style.background = baseBg;
-            b.style.color = baseFg;
-            b.style.borderColor = baseBorder;
-          }
+          b.classList.toggle('active', b === btn);
         });
         onChange(level || null);
       });
