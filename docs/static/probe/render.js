@@ -79,6 +79,10 @@ window.ProbeRender = (function () {
       + '.probe-table thead .probe-sticky-col{z-index:3}'
       + 'tr[data-expected-row]{background:#f0f3f6;border-bottom:2px solid #d0d7de !important}'
       + 'tr[data-expected-row] .probe-sticky-col{background:#f0f3f6}'
+      + 'tr[data-rfc-level-row]{background:#f6f8fa}'
+      + 'tr[data-rfc-level-row] .probe-sticky-col{background:#f6f8fa}'
+      + 'html.dark tr[data-rfc-level-row]{background:#1e242c}'
+      + 'html.dark tr[data-rfc-level-row] .probe-sticky-col{background:#1e242c}'
       + '.probe-server-row:hover .probe-sticky-col{background:#eef1f5}'
       + '.probe-server-row.probe-row-active .probe-sticky-col{background:#c8ddf0}'
       // Sticky first column — dark
@@ -428,6 +432,22 @@ window.ProbeRender = (function () {
     return v === 'Pass' ? PASS_BG : v === 'Warn' ? WARN_BG : FAIL_BG;
   }
 
+  function rfcLevelBg(level) {
+    if (level === 'Must') return '#cf222e';
+    if (level === 'Should') return '#9a6700';
+    if (level === 'OughtTo') return '#b08800';
+    if (level === 'May') return '#0969da';
+    return '#656d76'; // NotApplicable
+  }
+
+  function rfcLevelLabel(level) {
+    if (level === 'Must') return 'MUST';
+    if (level === 'Should') return 'SHOULD';
+    if (level === 'OughtTo') return 'OUGHT TO';
+    if (level === 'May') return 'MAY';
+    return 'N/A';
+  }
+
   function buildLookups(servers) {
     servers = filterBlacklisted(servers);
     var names = servers.map(function (sv) { return sv.name; }).sort();
@@ -597,6 +617,19 @@ window.ProbeRender = (function () {
       t += '</th>';
     });
     t += '</tr></thead><tbody>';
+
+    // RFC Level row
+    t += '<tr data-rfc-level-row>';
+    t += '<td class="probe-sticky-col" style="padding:6px 10px;font-weight:700;font-size:12px;color:#656d76;">RFC Level</td>';
+    orderedTests.forEach(function (tid, i) {
+      var first = lookup[names[0]][tid];
+      var level = first.rfcLevel || 'Must';
+      var sepCls = i === unscoredStart ? ' probe-unscored-sep' : '';
+      var bg = rfcLevelBg(level);
+      var label = rfcLevelLabel(level);
+      t += '<td data-test-label="' + escapeAttr(shortLabels[i]) + '" class="' + sepCls + '" style="text-align:center;padding:3px 4px;">' + pill(bg, label) + '</td>';
+    });
+    t += '</tr>';
 
     // Expected row
     t += '<tr data-expected-row>';

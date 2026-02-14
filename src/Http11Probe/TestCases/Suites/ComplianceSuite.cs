@@ -13,6 +13,7 @@ public static class ComplianceSuite
             Id = "COMP-BASELINE",
             Description = "Valid GET request — confirms server is reachable",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
@@ -25,6 +26,7 @@ public static class ComplianceSuite
             Id = "RFC9112-2.2-BARE-LF-REQUEST-LINE",
             Description = "Bare LF in request line should be rejected, but MAY be accepted",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9112 §2.2",
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/1.1\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -46,6 +48,7 @@ public static class ComplianceSuite
             Id = "RFC9112-2.2-BARE-LF-HEADER",
             Description = "Bare LF in header should be rejected, but MAY be accepted",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9112 §2.2",
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\nX-Test: value\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -93,6 +96,7 @@ public static class ComplianceSuite
             Id = "RFC9112-3-MULTI-SP-REQUEST-LINE",
             Description = "Multiple spaces between request-line components — SHOULD reject but MAY parse leniently",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §3",
             PayloadFactory = ctx => MakeRequest($"GET  / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -130,6 +134,7 @@ public static class ComplianceSuite
             Id = "RFC9112-2.3-INVALID-VERSION",
             Description = "Invalid HTTP version must be rejected",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §2.3",
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/9.9\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -192,6 +197,7 @@ public static class ComplianceSuite
             Id = "RFC9112-3.2-FRAGMENT-IN-TARGET",
             Description = "Fragment (#) in request-target — not part of origin-form grammar",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §3.2",
             PayloadFactory = ctx => MakeRequest($"GET /path#frag HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -216,6 +222,7 @@ public static class ComplianceSuite
             Id = "RFC9112-2.3-HTTP09-REQUEST",
             Description = "HTTP/0.9 request (no version) must be rejected",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §2.3",
             PayloadFactory = _ => MakeRequest("GET /\r\n"),
             Expected = new ExpectedBehavior
@@ -409,6 +416,7 @@ public static class ComplianceSuite
             Id = "COMP-LEADING-CRLF",
             Description = "Leading CRLF before request-line — server may ignore per RFC",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §2.2",
             PayloadFactory = ctx => MakeRequest($"\r\n\r\nGET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -432,6 +440,7 @@ public static class ComplianceSuite
             Id = "COMP-ABSOLUTE-FORM",
             Description = "Absolute-form request-target — server should accept per RFC",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             Scored = false,
             RfcReference = "RFC 9112 §3.2.2",
             PayloadFactory = ctx => MakeRequest($"GET http://{ctx.HostHeader}/ HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
@@ -456,6 +465,7 @@ public static class ComplianceSuite
             Id = "COMP-METHOD-CASE",
             Description = "Lowercase method 'get' — methods are case-sensitive per RFC",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §9.1",
             PayloadFactory = ctx => MakeRequest($"get / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -684,6 +694,7 @@ public static class ComplianceSuite
             Id = "COMP-METHOD-CONNECT",
             Description = "CONNECT to an origin server must be rejected",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §9.3.6",
             PayloadFactory = _ => MakeRequest(
                 "CONNECT example.com:443 HTTP/1.1\r\nHost: example.com:443\r\n\r\n"),
@@ -708,6 +719,7 @@ public static class ComplianceSuite
             Id = "COMP-EXPECT-UNKNOWN",
             Description = "Unknown Expect value should be rejected with 417",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9110 §10.1.1",
             PayloadFactory = ctx => MakeRequest(
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nExpect: 200-ok\r\n\r\n"),
@@ -735,6 +747,7 @@ public static class ComplianceSuite
             Id = "COMP-GET-WITH-CL-BODY",
             Description = "GET with Content-Length and body — semantically unusual",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9110 §9.3.1",
             Scored = false,
             PayloadFactory = ctx => MakeRequest(
@@ -816,6 +829,7 @@ public static class ComplianceSuite
             Id = "COMP-METHOD-TRACE",
             Description = "TRACE request — should be disabled in production",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §9.3.8",
             Scored = false,
             PayloadFactory = ctx => MakeRequest(
@@ -857,6 +871,7 @@ public static class ComplianceSuite
             Id = "COMP-REQUEST-LINE-TAB",
             Description = "Tab as request-line delimiter — SHOULD reject but MAY parse on whitespace",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §3",
             PayloadFactory = ctx => MakeRequest($"GET\t/ HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -944,6 +959,7 @@ public static class ComplianceSuite
             Id = "COMP-HTTP10-DEFAULT-CLOSE",
             Description = "HTTP/1.0 without keep-alive — server should close connection after response",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §9.3",
             PayloadFactory = ctx => MakeRequest(
                 $"GET / HTTP/1.0\r\nHost: {ctx.HostHeader}\r\n\r\n"),
@@ -966,6 +982,7 @@ public static class ComplianceSuite
             Id = "COMP-HTTP10-NO-HOST",
             Description = "HTTP/1.0 without Host header — valid per HTTP/1.0",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             Scored = false,
             RfcReference = "RFC 9112 §3.2",
             PayloadFactory = _ => MakeRequest("GET / HTTP/1.0\r\n\r\n"),
@@ -990,6 +1007,7 @@ public static class ComplianceSuite
             Id = "COMP-HTTP12-VERSION",
             Description = "HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.May,
             Scored = false,
             RfcReference = "RFC 9112 §2.3",
             PayloadFactory = ctx => MakeRequest(
@@ -1013,6 +1031,7 @@ public static class ComplianceSuite
             Id = "COMP-TRACE-WITH-BODY",
             Description = "TRACE with Content-Length body should be rejected",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             Scored = false,
             RfcReference = "RFC 9110 §9.3.8",
             PayloadFactory = ctx => MakeRequest(
@@ -1094,6 +1113,7 @@ public static class ComplianceSuite
             Id = "COMP-UNKNOWN-METHOD",
             Description = "Unrecognized method should be rejected with 501 or 405",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §9.1",
             PayloadFactory = ctx => MakeRequest(
                 $"FOOBAR / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
@@ -1211,6 +1231,7 @@ public static class ComplianceSuite
             Id = "COMP-OPTIONS-ALLOW",
             Description = "OPTIONS response should include Allow header listing supported methods",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §9.3.7",
             PayloadFactory = ctx => MakeRequest(
                 $"OPTIONS / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
@@ -1233,6 +1254,7 @@ public static class ComplianceSuite
             Id = "COMP-CONTENT-TYPE",
             Description = "Response with content should include Content-Type header",
             Category = TestCategory.Compliance,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §8.3",
             PayloadFactory = ctx => MakeRequest(
                 $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),

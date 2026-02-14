@@ -58,6 +58,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-TE-BOTH",
             Description = "Both Content-Length and Transfer-Encoding present — server MAY reject or process with TE alone",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.OughtTo,
             RfcReference = "RFC 9112 §6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 6\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n"),
@@ -100,6 +101,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-LEADING-ZEROS",
             Description = "Content-Length with leading zeros — valid per 1*DIGIT grammar but may cause parser disagreement",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §8.6",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 005\r\n\r\nhello"),
@@ -270,6 +272,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-TRAILING-SPACE",
             Description = "Content-Length with trailing space — OWS trimming is valid per RFC 9110 §5.5",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §5.5",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5 \r\n\r\nhello"),
@@ -294,6 +297,7 @@ public static class SmugglingSuite
             Id = "SMUG-TE-DOUBLE-CHUNKED",
             Description = "Transfer-Encoding: chunked, chunked with CL is ambiguous",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked, chunked\r\nContent-Length: 5\r\n\r\nhello"),
@@ -319,6 +323,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-EXTRA-LEADING-SP",
             Description = "Content-Length with extra leading whitespace (double space OWS)",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §5.5",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length:  5\r\n\r\nhello"),
@@ -343,6 +348,7 @@ public static class SmugglingSuite
             Id = "SMUG-TE-CASE-MISMATCH",
             Description = "Transfer-Encoding: Chunked (capital C) with CL — case-insensitive is valid",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9112 §6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: Chunked\r\nContent-Length: 5\r\n\r\nhello"),
@@ -495,6 +501,7 @@ public static class SmugglingSuite
             Id = "SMUG-TE-LEADING-COMMA",
             Description = "Transfer-Encoding with leading comma (, chunked) — RFC says empty list elements MUST be ignored",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §5.6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: , chunked\r\nContent-Length: 5\r\n\r\nhello"),
@@ -614,6 +621,7 @@ public static class SmugglingSuite
             Id = "SMUG-CHUNK-EXT-LF",
             Description = "Bare LF in chunk extension — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9112 §7.1.1",
             PayloadFactory = ctx =>
             {
@@ -658,6 +666,7 @@ public static class SmugglingSuite
             Id = "SMUG-CHUNK-LF-TERM",
             Description = "Bare LF as chunk data terminator — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9112 §7.1",
             PayloadFactory = ctx =>
             {
@@ -811,6 +820,7 @@ public static class SmugglingSuite
             Id = "SMUG-CHUNK-LF-TRAILER",
             Description = "Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9112 §7.1",
             PayloadFactory = ctx =>
             {
@@ -1190,6 +1200,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-DOUBLE-ZERO",
             Description = "Content-Length: 00 — matches 1*DIGIT but leading zero ambiguity",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §8.6",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 00\r\n\r\n"),
@@ -1214,6 +1225,7 @@ public static class SmugglingSuite
             Id = "SMUG-CL-LEADING-ZEROS-OCTAL",
             Description = "Content-Length: 0200 — octal 128 vs decimal 200, parser disagreement vector",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §8.6",
             PayloadFactory = ctx =>
             {
@@ -1273,6 +1285,7 @@ public static class SmugglingSuite
             Id = "SMUG-TE-TRAILING-COMMA",
             Description = "Transfer-Encoding: chunked, — trailing comma produces empty list element",
             Category = TestCategory.Smuggling,
+            RfcLevel = RfcLevel.Should,
             RfcReference = "RFC 9110 §5.6.1",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked,\r\nContent-Length: 5\r\n\r\nhello"),

@@ -155,6 +155,7 @@ jobs:
                     'expected': expected, 'got': got,
                     'connectionState': conn, 'reason': reason,
                     'scored': scored,
+                    'rfcLevel': r.get('rfcLevel', 'Must'),
                     'durationMs': r.get('durationMs', 0),
                     'rawRequest': r.get('rawRequest'),
                     'rawResponse': r.get('rawResponse'),

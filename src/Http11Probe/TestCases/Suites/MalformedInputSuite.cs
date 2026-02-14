@@ -12,6 +12,7 @@ public static class MalformedInputSuite
             Id = "MAL-BINARY-GARBAGE",
             Description = "Random binary garbage should be rejected or connection closed",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = _ =>
             {
                 var rng = new Random(42);
@@ -39,6 +40,7 @@ public static class MalformedInputSuite
             Id = "MAL-LONG-URL",
             Description = "100KB URL should be rejected with 414 URI Too Long",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = ctx =>
             {
                 var longPath = "/" + new string('A', 100_000);
@@ -64,6 +66,7 @@ public static class MalformedInputSuite
             Id = "MAL-LONG-HEADER-VALUE",
             Description = "100KB header value should be rejected with 431",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = ctx =>
             {
                 var longValue = new string('B', 100_000);
@@ -88,6 +91,7 @@ public static class MalformedInputSuite
             Id = "MAL-MANY-HEADERS",
             Description = "10,000 headers should be rejected with 431",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx =>
             {
                 var sb = new StringBuilder();
@@ -147,6 +151,7 @@ public static class MalformedInputSuite
             Id = "MAL-INCOMPLETE-REQUEST",
             Description = "Partial HTTP request — request-line and headers but no final CRLF",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest($"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nX-Test: value"),
             Expected = new ExpectedBehavior
             {
@@ -168,6 +173,7 @@ public static class MalformedInputSuite
             Id = "MAL-EMPTY-REQUEST",
             Description = "Zero bytes — TCP connection established without sending any data",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = _ => [],
             Expected = new ExpectedBehavior
             {
@@ -188,6 +194,7 @@ public static class MalformedInputSuite
             Id = "MAL-LONG-HEADER-NAME",
             Description = "100KB header name should be rejected with 400/431",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = ctx =>
             {
                 var longName = new string('A', 100_000);
@@ -212,6 +219,7 @@ public static class MalformedInputSuite
             Id = "MAL-LONG-METHOD",
             Description = "100KB method name should be rejected",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = ctx =>
             {
                 var longMethod = new string('A', 100_000);
@@ -298,6 +306,7 @@ public static class MalformedInputSuite
             Id = "MAL-WHITESPACE-ONLY-LINE",
             Description = "Whitespace-only request line should be rejected or timeout",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = _ => MakeRequest("   \r\n\r\n"),
             Expected = new ExpectedBehavior
             {
@@ -349,6 +358,7 @@ public static class MalformedInputSuite
             Id = "MAL-H2-PREFACE",
             Description = "HTTP/2 connection preface sent to HTTP/1.1 server must be rejected",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = _ => Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"),
             Expected = new ExpectedBehavior
             {
@@ -384,6 +394,7 @@ public static class MalformedInputSuite
             Id = "MAL-CL-TAB-BEFORE-VALUE",
             Description = "Content-Length with tab as OWS — valid per RFC but unusual",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.May,
             RfcReference = "RFC 9110 §5.5",
             PayloadFactory = ctx => MakeRequest(
                 $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length:\t5\r\n\r\nhello"),
@@ -411,6 +422,7 @@ public static class MalformedInputSuite
             Id = "MAL-URL-BACKSLASH",
             Description = "Backslash in URL path — not valid URI character, some servers normalize to /",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.Should,
             PayloadFactory = ctx => MakeRequest(
                 $"GET /path\\file HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -457,6 +469,7 @@ public static class MalformedInputSuite
             Id = "MAL-URL-PERCENT-NULL",
             Description = "Percent-encoded NUL byte (%00) in URL — security risk from null byte injection",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest(
                 $"GET /path%00.html HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -480,6 +493,7 @@ public static class MalformedInputSuite
             Id = "MAL-URL-PERCENT-CRLF",
             Description = "Percent-encoded CRLF (%0d%0a) in URL — header injection if server decodes during parsing",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest(
                 $"GET /path%0d%0aX-Injected:%20true HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
             Expected = new ExpectedBehavior
@@ -503,6 +517,7 @@ public static class MalformedInputSuite
             Id = "MAL-CHUNK-EXT-64K",
             Description = "64KB chunk extension — tests extension length limits (CVE-2023-39326 class)",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx =>
             {
                 var longExt = new string('a', 65_536);
@@ -530,6 +545,7 @@ public static class MalformedInputSuite
             Id = "MAL-RANGE-OVERLAPPING",
             Description = "1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class)",
             Category = TestCategory.MalformedInput,
+            RfcLevel = RfcLevel.NotApplicable,
             Scored = false,
             PayloadFactory = ctx =>
             {

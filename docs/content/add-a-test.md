@@ -21,6 +21,7 @@ yield return new TestCase
     Id = "COMP-MY-TEST",
     Description = "Description of what the test checks",
     Category = TestCategory.Compliance,
+    RfcLevel = RfcLevel.Must,              // Must (default) | Should | May | OughtTo | NotApplicable
     RfcReference = "RFC 9112 §X.X",
 
     PayloadFactory = ctx => MakeRequest(
@@ -86,6 +87,7 @@ Expected = new ExpectedBehavior
 
 ### Key conventions
 
+- Set `RfcLevel` to match the RFC 2119 keyword for the requirement being tested. The default is `Must` — only set it explicitly for non-Must tests. Available values: `Must`, `Should`, `May`, `OughtTo`, `NotApplicable`. Check the [RFC Requirement Dashboard]({{< relref "docs/rfc-requirement-dashboard" >}}) for classification guidance.
 - Use `Exact(400)` with **no** `AllowConnectionClose` for strict MUST-400 requirements (SP-BEFORE-COLON, MISSING-HOST, DUPLICATE-HOST, OBS-FOLD, CR-ONLY).
 - Set `AllowConnectionClose = true` only when connection close is an acceptable alternative to a status code.
 - Set `Scored = false` for MAY-level or informational tests.

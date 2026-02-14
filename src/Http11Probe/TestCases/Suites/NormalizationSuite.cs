@@ -166,6 +166,7 @@ public static class NormalizationSuite
             Id = "NORM-UNDERSCORE-CL",
             Description = "Underscore in Content-Length name — checks if server normalizes Content_Length to Content-Length",
             Category = TestCategory.Normalization,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest(
                 $"POST /echo HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 11\r\nContent_Length: 99\r\n\r\nhello world"),
             Expected = new ExpectedBehavior
@@ -212,6 +213,7 @@ public static class NormalizationSuite
             Id = "NORM-CASE-TE",
             Description = "All-uppercase TRANSFER-ENCODING — checks if server normalizes header name casing",
             Category = TestCategory.Normalization,
+            RfcLevel = RfcLevel.NotApplicable,
             Scored = false,
             PayloadFactory = ctx => MakeRequest(
                 $"POST /echo HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 11\r\nTRANSFER-ENCODING: chunked\r\n\r\nhello world"),
@@ -228,6 +230,7 @@ public static class NormalizationSuite
             Id = "NORM-UNDERSCORE-TE",
             Description = "Underscore in Transfer-Encoding name — checks if server normalizes Transfer_Encoding to Transfer-Encoding",
             Category = TestCategory.Normalization,
+            RfcLevel = RfcLevel.NotApplicable,
             PayloadFactory = ctx => MakeRequest(
                 $"POST /echo HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n\r\nhello world"),
             Expected = new ExpectedBehavior

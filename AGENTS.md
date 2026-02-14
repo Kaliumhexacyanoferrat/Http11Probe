@@ -41,6 +41,7 @@ yield return new TestCase
     },
 
     // OPTIONAL fields
+    RfcLevel = RfcLevel.Must,                      // Must (default) | Should | May | OughtTo | NotApplicable
     RfcReference = "RFC 9112 §5.1",                // Use § not "Section". Omit if no RFC applies.
     Scored = true,                                 // Default true. Set false for MAY/informational tests.
     AllowConnectionClose = false,                  // On Expected. See validation rules below.
@@ -114,8 +115,18 @@ Use for pass/warn/fail logic, timeout acceptance, or multi-outcome tests.
 private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);
 ```
 
+**RfcLevel values:**
+- `RfcLevel.Must` — (default) RFC says MUST / MUST NOT. Only set explicitly if you want to be clear.
+- `RfcLevel.Should` — RFC says SHOULD / SHOULD NOT / RECOMMENDED.
+- `RfcLevel.May` — RFC says MAY / OPTIONAL. Both behaviors are compliant.
+- `RfcLevel.OughtTo` — RFC uses "ought to" (weaker than SHOULD).
+- `RfcLevel.NotApplicable` — No single RFC 2119 keyword applies (best-practice / defensive tests).
+
+Check the [RFC Requirement Dashboard](docs/content/docs/rfc-requirement-dashboard.md) for classification guidance and to verify your assignment matches the existing pattern.
+
 **Critical rules:**
 - NEVER set `AllowConnectionClose = true` for MUST-400 requirements where the RFC explicitly says "respond with 400".
+- Set `RfcLevel` to match the RFC 2119 keyword in the relevant RFC quote. Default is `Must` — only set explicitly for non-Must tests.
 - Set `Scored = false` only for MAY-level or purely informational tests.
 - Always use `ctx.HostHeader` (not a hardcoded host) in payloads.
 - Tests are auto-discovered — no registration step needed. The `GetTestCases()` yield return is sufficient.

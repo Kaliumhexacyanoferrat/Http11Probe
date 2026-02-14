@@ -13,5 +13,6 @@ public sealed class TestCase
     public required ExpectedBehavior Expected { get; init; }
     public bool RequiresConnectionReuse { get; init; }
     public bool Scored { get; init; } = true;
+    public RfcLevel RfcLevel { get; init; } = RfcLevel.Must;
     public Func<HttpResponse?, string?>? BehavioralAnalyzer { get; init; }
 }

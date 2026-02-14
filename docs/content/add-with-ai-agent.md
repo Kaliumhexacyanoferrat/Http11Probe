@@ -25,10 +25,11 @@ Point your AI agent at the repository and reference the `AGENTS.md` file. It con
 
 For a new **test**, the agent will:
 
-1. Add a `yield return new TestCase { ... }` block to the correct suite file
+1. Add a `yield return new TestCase { ... }` block to the correct suite file, including the correct `RfcLevel` (`Must`, `Should`, `May`, `OughtTo`, or `NotApplicable`)
 2. Add a docs URL mapping entry (if the test is `COMP-*` or `RFC*` prefixed)
 3. Create a documentation page under `docs/content/docs/{category}/`
 4. Add a card to the category index page
+5. Add a row to the RFC Requirement Dashboard
 
 For a new **framework**, the agent will:
 
@@ -41,4 +42,5 @@ For a new **framework**, the agent will:
 
 - The `AGENTS.md` file includes verification checklists — make sure the agent runs them before submitting
 - No changes to CI workflows are needed for either task; tests and servers are auto-discovered
-- For tests, the agent should check the RFC to determine the correct requirement level (MUST/SHOULD/MAY) and validation pattern
+- For tests, the agent should check the RFC to determine the correct `RfcLevel` (MUST/SHOULD/MAY/"ought to"/N/A) and set it on the `TestCase`. The default is `Must` — only set explicitly for non-Must tests
+- The agent should add a row to the [RFC Requirement Dashboard](docs/content/docs/rfc-requirement-dashboard.md) and update all counts
