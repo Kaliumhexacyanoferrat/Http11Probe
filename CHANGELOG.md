@@ -2,9 +2,16 @@
 
 All notable changes to Http11Probe are documented in this file.
 
-## [2026-02-15]
+## [2026-02-14]
 
 ### Added
+- **RFC Level indicator row** — result tables now show a translucent capsule (MUST/SHOULD/MAY/N/A) for each test, indicating the RFC 2119 requirement level
+- **Method indicator row** — result tables show the HTTP method (GET, POST, etc.) for each test in an outlined monospace badge style
+- **Method filter** — filter result tables by HTTP method (GET, POST, HEAD, etc.) on all category pages
+- **RFC Level filter** — filter result tables by RFC requirement level (MUST, SHOULD, MAY, N/A) on all category pages
+- **Method & RFC Level in popup** — server detail modal now includes Method and RFC Level columns alongside Test, Expected, Got, and Description
+- **`RfcLevel` enum** — `Must`, `Should`, `May`, `OughtTo`, `NotApplicable` classification for every test case
+- **RFC Level annotations** — all tests across Compliance, Smuggling, MalformedInput, and Normalization suites annotated with their RFC 2119 requirement level
 - **Verbose Probe workflow** — new `probe-verbose.yml` GitHub Action for manual single-server probing with `--verbose` output, triggered via `workflow_dispatch` with a server name input (#60)
 - **9 new RFC 9110 compliance tests** sourced from [mohammed90/http-compliance-testing](https://github.com/mohammed90/http-compliance-testing):
   - `COMP-HEAD-NO-BODY` — HEAD response must not contain a message body (RFC 9110 §9.3.2, MUST)
@@ -21,55 +28,17 @@ All notable changes to Http11Probe are documented in this file.
 - **AGENTS.md** — added Step 5 (RFC Requirement Dashboard) to the "Add a new test" task; added Step 5 (server documentation page) to the "Add a framework" task
 - **RFC Requirement Dashboard** — updated with all 9 new tests, counts, and cross-references
 - **Landing page cards** — removed hardcoded test count from RFC Requirement Dashboard subtitle
+- **Score calculation** — warnings now included in the overall score (#66)
 
 ### Fixed
 - **Caddy server** — fixed POST body echo using Caddy Parrot pattern; updated Caddyfile, Dockerfile, and docs page
 - **Lighttpd server** — fixed POST body echo implementation (#57)
-
-## [2026-02-14]
-
-### Added
-- **RFC Requirement Dashboard** — all 148 tests classified by RFC 2119 level (MUST/SHOULD/MAY/"ought to"/Unscored/N/A) with exact RFC quotes proving each classification (`docs/content/docs/rfc-requirement-dashboard.md`)
-- **Add a Test guide** — step-by-step documentation for contributing new tests to the platform (`docs/content/add-a-test.md`)
-- **AI Agent contribution guide** — machine-readable `AGENTS.md` at repo root with precise instructions for LLM agents to add tests or frameworks (`docs/content/add-with-ai-agent.md`)
-- **Contribute menu** — top nav "Add a Framework" replaced with a "Contribute" dropdown containing Add a Framework, Add a Test, and Add with AI Agent
-- **Landing page cards** — RFC Requirement Dashboard card in hero section; Add a Test and Add with AI Agent cards in Contribute section
-- **Glossary card** — RFC Requirement Dashboard linked from the glossary index page
-- **Server configuration pages** — per-server docs pages showing Dockerfile, source code, and config files for all 36 tested servers (`docs/content/servers/`)
-- **Clickable server names** — server names in the probe results table and summary bar chart now link to their configuration page
-- **Sticky first column** — server name column stays pinned to the left edge while scrolling horizontally through result tables
-- **Collapsible sub-groups** — group headers in result tables are now clickable to collapse/expand, with a chevron indicator and a "Collapse All / Expand All" toggle button
-- **Row-click detail popup** — clicking a server row opens a modal showing that server's results for the current table in a vertical layout (Test, Expected, Got, Description) with section and table name in the header
-- **Truncation notice** — tooltip and modal now show a `[Truncated]` notice at the top when raw request/response data exceeds the 8,192-byte display limit
-- **Filter box** — text input above result tables to filter by server name, language, or test name; supports multiple comma-separated keywords
-- **`--verbose` CLI flag** — prints the raw server response below each test result when enabled (`--verbose` or `-v`)
-- **Giscus comments** — every glossary page now has a GitHub Discussions-powered comments section at the bottom
-
-### Changed
-- **Horizontal column headers** — test name headers are now displayed horizontally instead of rotated at -55°, improving readability
-- **Zebra striping** — alternating row backgrounds for easier scanning
-- **Softer borders** — lighter table borders in both light and dark mode, plus vertical separators between test columns
-- **Expected row styling** — CSS-only background with dark mode support (fixes light gray leak in dark mode), thicker bottom border for visual separation
-- **Scored/unscored separator** — heavier vertical border line between scored and unscored test columns
-- **Larger pills** — increased padding, min-width, and border-radius for result badges
-- **Improved readability** — larger base font (13px), bigger column headers with heavier weight and letter-spacing, more cell padding throughout
-- **Group header refinement** — added padding and bottom border to collapsible group headers
-- **Toggle button polish** — reduced border-radius from pill to button shape
-- **Scroll overflow hint** — "Scroll to see all tests" label and right-edge fade gradient appear when tables overflow horizontally
-- **Language suffix dark mode** — improved contrast for language labels in dark mode
-- **Mobile bottom-sheet modal** — modal slides up from bottom on small screens with full width and rounded top corners
-- **Touch-friendly targets** — larger buttons and invisible hit-area expansion on pills for touch devices
-- **Smooth momentum scroll** — added `-webkit-overflow-scrolling:touch` for iOS
-- **Stronger sticky shadow on mobile** — increased shadow intensity for the pinned server name column
-- **Scrollable tooltips** — hover tooltips are now interactive and scrollable for large payloads (removed `pointer-events:none`, increased `max-height` to `60vh`)
-- **Larger click modal** — expanded from `max-width:700px` to `90vw` and `max-height` from `80vh` to `85vh` to better accommodate large request/response data
-- **Landing page section rename** — "Add Your Framework" heading renamed to "Contribute to the Project" with updated copy emphasizing community contributions
-- **Uniform card sizing** — CSS rule forces all home page card grids to `repeat(2, 1fr)` so every card is the same width
-- **Sidebar reordering** — RFC Requirement Dashboard at weight 2 (after Understanding HTTP), RFC Basics bumped to 3, Baseline to 4
-- **Kestrel HEAD/OPTIONS support** — added explicit HEAD and OPTIONS endpoint handlers to ASP.NET Minimal server so smuggling tests evaluate correctly instead of returning 405
-- **Add a Framework docs** — documented HEAD and OPTIONS as required endpoints
-- Raw request capture now includes truncation metadata when payload exceeds 8,192 bytes (`TestRunner.cs`)
-- Raw response capture now includes truncation metadata when response exceeds 8,192 bytes (`ResponseParser.cs`)
+- **HAProxy server** — fixed POST / endpoint (#64)
+- **Echo validation** — empty body now correctly returns Fail; body mismatch returns Fail; chunked transfer encoding properly decoded before comparison (#61)
+- **Validator ordering** — fixed 8 tests where connection-state check ran before response-status check, preventing false passes when server returned 2xx then closed (COMP-POST-CL-UNDERSEND, RFC9112-2.3-HTTP09-REQUEST, MAL-BINARY-GARBAGE, MAL-INCOMPLETE-REQUEST, MAL-EMPTY-REQUEST, MAL-WHITESPACE-ONLY-LINE, MAL-H2-PREFACE, MAL-POST-CL-HUGE-NO-BODY)
+- **COMP-CHUNKED-NO-FINAL validator** — fixed same ordering bug where connection close was accepted even when server returned 2xx
+- **Method extraction** — handles leading CRLF in raw requests and tab-delimited request lines; non-HTTP pseudo-methods (PRI) shown as '?'
+- **Category-scoped filters** — Method and RFC Level filters now only show options relevant to the current category page
 
 ## [2026-02-12]
 
