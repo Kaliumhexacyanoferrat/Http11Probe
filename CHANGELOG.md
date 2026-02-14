@@ -2,9 +2,10 @@
 
 All notable changes to Http11Probe are documented in this file.
 
-## [Unreleased]
+## [2026-02-15]
 
 ### Added
+- **Verbose Probe workflow** — new `probe-verbose.yml` GitHub Action for manual single-server probing with `--verbose` output, triggered via `workflow_dispatch` with a server name input (#60)
 - **9 new RFC 9110 compliance tests** sourced from [mohammed90/http-compliance-testing](https://github.com/mohammed90/http-compliance-testing):
   - `COMP-HEAD-NO-BODY` — HEAD response must not contain a message body (RFC 9110 §9.3.2, MUST)
   - `COMP-UNKNOWN-METHOD` — unrecognized method should be rejected with 501/405 (RFC 9110 §9.1, SHOULD)
@@ -20,7 +21,10 @@ All notable changes to Http11Probe are documented in this file.
 - **AGENTS.md** — added Step 5 (RFC Requirement Dashboard) to the "Add a new test" task; added Step 5 (server documentation page) to the "Add a framework" task
 - **RFC Requirement Dashboard** — updated with all 9 new tests, counts, and cross-references
 - **Landing page cards** — removed hardcoded test count from RFC Requirement Dashboard subtitle
+
+### Fixed
 - **Caddy server** — fixed POST body echo using Caddy Parrot pattern; updated Caddyfile, Dockerfile, and docs page
+- **Lighttpd server** — fixed POST body echo implementation (#57)
 
 ## [2026-02-14]
 
