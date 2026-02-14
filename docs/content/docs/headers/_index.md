@@ -30,4 +30,7 @@ HTTP header fields follow a strict grammar: `field-name ":" OWS field-value OWS`
   {{< card link="header-no-colon" title="HEADER-NO-COLON" subtitle="Header line with no colon separator." >}}
   {{< card link="whitespace-before-headers" title="WHITESPACE-BEFORE-HEADERS" subtitle="Whitespace before the first header line." >}}
   {{< card link="expect-unknown" title="EXPECT-UNKNOWN" subtitle="Unknown Expect value. Should respond with 417." >}}
+  {{< card link="date-header" title="DATE-HEADER" subtitle="Origin server must include Date header in responses." >}}
+  {{< card link="no-1xx-http10" title="NO-1XX-HTTP10" subtitle="Server must not send 1xx to HTTP/1.0 client." >}}
+  {{< card link="content-type-presence" title="CONTENT-TYPE" subtitle="Response with content should include Content-Type." >}}
 {{< /cards >}}

@@ -19,4 +19,5 @@ The `Content-Length` header indicates the size of the message body in bytes. Its
 {{< cards >}}
   {{< card link="cl-non-numeric" title="CL-NON-NUMERIC" subtitle="Non-numeric Content-Length value." >}}
   {{< card link="cl-plus-sign" title="CL-PLUS-SIGN" subtitle="Content-Length with a + prefix." >}}
+  {{< card link="no-cl-in-204" title="NO-CL-IN-204" subtitle="Content-Length forbidden in 204 responses." >}}
 {{< /cards >}}

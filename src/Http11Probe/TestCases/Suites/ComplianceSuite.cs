@@ -1047,6 +1047,191 @@ public static class ComplianceSuite
                 ExpectedStatus = StatusCodeRange.Range(200, 299)
             }
         };
+
+        // ── RFC 9110 response semantics ──────────────────────────────
+
+        yield return new TestCase
+        {
+            Id = "COMP-HEAD-NO-BODY",
+            Description = "HEAD response must not contain a message body",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §9.3.2",
+            PayloadFactory = ctx => MakeRequest(
+                $"HEAD / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx with no body",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Fail : TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return string.IsNullOrEmpty(response.Body) ? TestVerdict.Pass : TestVerdict.Fail;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-UNKNOWN-METHOD",
+            Description = "Unrecognized method should be rejected with 501 or 405",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §9.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"FOOBAR / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "501/405/400 or close",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state == ConnectionState.ClosedByServer ? TestVerdict.Pass : TestVerdict.Fail;
+                    if (response.StatusCode is 501 or 405 or 400)
+                        return TestVerdict.Pass;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-405-ALLOW",
+            Description = "405 response must include an Allow header",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §15.5.6",
+            PayloadFactory = ctx => MakeRequest(
+                $"DELETE / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "405 + Allow header",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode == 405)
+                        return response.Headers.ContainsKey("Allow") ? TestVerdict.Pass : TestVerdict.Fail;
+                    // Server didn't return 405 — can't verify the Allow requirement
+                    return TestVerdict.Warn;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-DATE-HEADER",
+            Description = "Origin server must include Date header in responses",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §6.6.1",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx with Date header",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return response.Headers.ContainsKey("Date") ? TestVerdict.Pass : TestVerdict.Fail;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-NO-1XX-HTTP10",
+            Description = "Server must not send 1xx responses to an HTTP/1.0 client",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §15.2",
+            PayloadFactory = ctx => MakeRequest(
+                $"POST / HTTP/1.0\r\nHost: {ctx.HostHeader}\r\nExpect: 100-continue\r\nContent-Length: 5\r\n\r\nhello"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "non-1xx response",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return state is ConnectionState.ClosedByServer or ConnectionState.TimedOut
+                            ? TestVerdict.Pass
+                            : TestVerdict.Fail;
+                    // Server sent 100 Continue to an HTTP/1.0 client — violation
+                    if (response.StatusCode is >= 100 and < 200)
+                        return TestVerdict.Fail;
+                    return TestVerdict.Pass;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-NO-CL-IN-204",
+            Description = "Server must not send Content-Length in a 204 response",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §8.6",
+            PayloadFactory = ctx => MakeRequest(
+                $"OPTIONS / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "204 without CL",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode == 204)
+                        return response.Headers.ContainsKey("Content-Length") ? TestVerdict.Fail : TestVerdict.Pass;
+                    // Server didn't return 204 — can't verify the CL prohibition
+                    return TestVerdict.Warn;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-OPTIONS-ALLOW",
+            Description = "OPTIONS response should include Allow header listing supported methods",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §9.3.7",
+            PayloadFactory = ctx => MakeRequest(
+                $"OPTIONS / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx with Allow header",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return response.Headers.ContainsKey("Allow") ? TestVerdict.Pass : TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
+
+        yield return new TestCase
+        {
+            Id = "COMP-CONTENT-TYPE",
+            Description = "Response with content should include Content-Type header",
+            Category = TestCategory.Compliance,
+            RfcReference = "RFC 9110 §8.3",
+            PayloadFactory = ctx => MakeRequest(
+                $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n"),
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx with Content-Type",
+                CustomValidator = (response, state) =>
+                {
+                    if (response is null)
+                        return TestVerdict.Fail;
+                    if (response.StatusCode is >= 200 and < 300)
+                        return response.Headers.ContainsKey("Content-Type") ? TestVerdict.Pass : TestVerdict.Warn;
+                    return TestVerdict.Fail;
+                }
+            }
+        };
     }
 
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);

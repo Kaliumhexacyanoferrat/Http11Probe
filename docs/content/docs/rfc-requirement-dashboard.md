@@ -1,6 +1,6 @@
 ---
 title: "RFC Requirement Dashboard"
-description: "Complete RFC 2119 requirement-level analysis for all 148 Http11Probe tests"
+description: "Complete RFC 2119 requirement-level analysis for all 157 Http11Probe tests"
 weight: 2
 breadcrumbs: false
 ---
@@ -11,14 +11,14 @@ This dashboard classifies every Http11Probe test by its [RFC 2119](https://www.r
 
 | Requirement Level | Count | Meaning (RFC 2119) |
 |---|---|---|
-| **MUST** | 84 | Absolute requirement — no compliant implementation may deviate |
-| **SHOULD** | 24 | Recommended — valid exceptions exist but must be understood |
+| **MUST** | 89 | Absolute requirement — no compliant implementation may deviate |
+| **SHOULD** | 27 | Recommended — valid exceptions exist but must be understood |
 | **MAY** | 10 | Truly optional — either behavior is fully compliant |
 | **"ought to"** | 1 | Weaker than SHOULD — recommended but not normative |
-| **Unscored** | 18 | Informational — no pass/fail judgement |
+| **Unscored** | 19 | Informational — no pass/fail judgement |
 | **N/A** | 11 | Best-practice / no single RFC verb applies |
 
-**Total: 148 tests**
+**Total: 157 tests**
 
 ---
 
@@ -123,10 +123,15 @@ The RFC requires rejection, but the mechanism (400 status or connection close) h
 | 82 | `COMP-UNKNOWN-TE-501` | Compliance | [RFC 9112 §6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1) | "A server that receives a request message with a transfer coding it does not understand **SHOULD** respond with 501." Combined with unknown-TE-without-CL making body length indeterminate: **MUST** reject. |
 | 83 | `SMUG-TE-TRAILING-SPACE` | Smuggling | [RFC 9112 §6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1) | "chunked " (with trailing space) is not an exact match for the registered coding "chunked". Combined with CL present: "the server **MUST** close the connection after responding." |
 | 84 | `MAL-POST-CL-HUGE-NO-BODY` | Malformed | [RFC 9112 §6.2](https://www.rfc-editor.org/rfc/rfc9112#section-6.2) | "If the sender closes the connection or the recipient times out before the indicated number of octets are received, the recipient **MUST** consider the message to be incomplete and close the connection." |
+| 85 | `COMP-HEAD-NO-BODY` | Compliance | [RFC 9110 §9.3.2](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.2) | "The HEAD method is identical to GET except that the server **MUST NOT** send content in the response." |
+| 86 | `COMP-405-ALLOW` | Compliance | [RFC 9110 §15.5.6](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.6) | "The origin server **MUST** generate an Allow header field in a 405 response containing a list of the target resource's currently supported methods." |
+| 87 | `COMP-DATE-HEADER` | Compliance | [RFC 9110 §6.6.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.6.1) | "An origin server with a clock **MUST** generate a Date header field in all 2xx (Successful), 3xx (Redirection), and 4xx (Client Error) responses." |
+| 88 | `COMP-NO-1XX-HTTP10` | Compliance | [RFC 9110 §15.2](https://www.rfc-editor.org/rfc/rfc9110#section-15.2) | "Since HTTP/1.0 did not define any 1xx status codes, a server **MUST NOT** send a 1xx response to an HTTP/1.0 client." |
+| 89 | `COMP-NO-CL-IN-204` | Compliance | [RFC 9110 §8.6](https://www.rfc-editor.org/rfc/rfc9110#section-8.6) | "A server **MUST NOT** send a Content-Length header field in any response with a status code of 1xx (Informational) or 204 (No Content)." |
 
 ---
 
-## SHOULD-Level Requirements (24 tests)
+## SHOULD-Level Requirements (27 tests)
 
 The RFC recommends this behavior. Valid exceptions exist but must be understood and justified.
 
@@ -156,6 +161,9 @@ The RFC recommends this behavior. Valid exceptions exist but must be understood 
 | 22 | `MAL-LONG-METHOD` | Malformed | [RFC 9112 §3](https://www.rfc-editor.org/rfc/rfc9112#section-3) | "A server that receives a method longer than any that it implements **SHOULD** respond with a 501 (Not Implemented) status code." |
 | 23 | `MAL-LONG-HEADER-VALUE` | Malformed | [RFC 9110 §5.4](https://www.rfc-editor.org/rfc/rfc9110#section-5.4) | "A server that receives a request header field line, field value, or set of fields larger than it wishes to process **MUST** respond with an appropriate 4xx (Client Error) status code." (MUST for 4xx, SHOULD for having a limit.) |
 | 24 | `MAL-LONG-HEADER-NAME` | Malformed | [RFC 9110 §5.4](https://www.rfc-editor.org/rfc/rfc9110#section-5.4) | Same as above. |
+| 25 | `COMP-UNKNOWN-METHOD` | Compliance | [RFC 9110 §9.1](https://www.rfc-editor.org/rfc/rfc9110#section-9.1) | "An origin server that receives a request method that is unrecognized or not implemented **SHOULD** respond with the 501 (Not Implemented) status code." |
+| 26 | `COMP-OPTIONS-ALLOW` | Compliance | [RFC 9110 §9.3.7](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.7) | "A server generating a successful response to OPTIONS **SHOULD** send any header that might indicate optional features implemented by the server and applicable to the target resource (e.g., Allow)." |
+| 27 | `COMP-CONTENT-TYPE` | Compliance | [RFC 9110 §8.3](https://www.rfc-editor.org/rfc/rfc9110#section-8.3) | "A sender that generates a message containing content **SHOULD** generate a Content-Type header field in the message." |
 
 ---
 
@@ -188,7 +196,7 @@ Weaker than SHOULD — recommends but does not normatively require.
 
 ---
 
-## Unscored Tests (18 tests)
+## Unscored Tests (19 tests)
 
 These tests are informational — they produce warnings but never fail.
 
@@ -196,22 +204,23 @@ These tests are informational — they produce warnings but never fail.
 |---|---------|-------|-----|-------|
 | 1 | `SMUG-TRANSFER_ENCODING` | Smuggling | [RFC 9112 §6.1](https://www.rfc-editor.org/rfc/rfc9112#section-6.1) | `Transfer_Encoding` (underscore) is a valid token but not the standard header. Some parsers normalize. |
 | 2 | `SMUG-CL-COMMA-SAME` | Smuggling | [RFC 9110 §8.6](https://www.rfc-editor.org/rfc/rfc9110#section-8.6) | "A recipient of a Content-Length header field value consisting of the same decimal value repeated as a comma-separated list **MAY** either reject the message as invalid or replace that invalid field value with a single instance." |
-| 3 | `SMUG-CHUNKED-WITH-PARAMS` | Smuggling | [RFC 9112 §7](https://www.rfc-editor.org/rfc/rfc9112#section-7) | "The chunked coding does not define any parameters. Their presence **SHOULD** be treated as an error." |
-| 4 | `SMUG-EXPECT-100-CL` | Smuggling | [RFC 9110 §10.1.1](https://www.rfc-editor.org/rfc/rfc9110#section-10.1.1) | Expect: 100-continue with CL — standard behavior, tested for proxy interaction. |
-| 5 | `SMUG-TRAILER-CL` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Content-Length in trailers — prohibited trailer field. **MUST NOT** be used for framing. |
-| 6 | `SMUG-TRAILER-TE` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Transfer-Encoding in trailers — prohibited trailer field. |
-| 7 | `SMUG-TRAILER-HOST` | Smuggling | [RFC 9110 §6.5.2](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.2) | Host in trailers — must not be used for routing. |
-| 8 | `SMUG-TRAILER-AUTH` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Authorization in trailers — prohibited trailer field. |
-| 9 | `SMUG-TRAILER-CONTENT-TYPE` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Content-Type in trailers — prohibited trailer field. |
-| 10 | `SMUG-HEAD-CL-BODY` | Smuggling | [RFC 9110 §9.3.2](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.2) | HEAD with body — server must not leave body on connection. |
-| 11 | `SMUG-OPTIONS-CL-BODY` | Smuggling | [RFC 9110 §9.3.7](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.7) | OPTIONS with body — server should consume or reject body. |
-| 12 | `SMUG-TE-TAB-BEFORE-VALUE` | Smuggling | [RFC 9110 §5.5](https://www.rfc-editor.org/rfc/rfc9110#section-5.5) | Tab as OWS before TE value — valid per `OWS = *( SP / HTAB )`. |
-| 13 | `SMUG-ABSOLUTE-URI-HOST-MISMATCH` | Smuggling | [RFC 9112 §3.2.2](https://www.rfc-editor.org/rfc/rfc9112#section-3.2.2) | Absolute-form URI host differs from Host header — routing confusion vector. |
-| 14 | `COMP-ABSOLUTE-FORM` | Compliance | [RFC 9112 §3.2.2](https://www.rfc-editor.org/rfc/rfc9112#section-3.2.2) | Absolute-form request-target — server **MUST** accept per RFC but many reject. |
-| 15 | `COMP-METHOD-CASE` | Compliance | [RFC 9110 §9.1](https://www.rfc-editor.org/rfc/rfc9110#section-9.1) | Methods are case-sensitive. Lowercase "get" is an unknown method. Server **SHOULD** respond 501. |
-| 16 | `MAL-RANGE-OVERLAPPING` | Malformed | [RFC 9110 §14.2](https://www.rfc-editor.org/rfc/rfc9110#section-14.2) | "A server that supports range requests **MAY** ignore or reject a Range header field that contains... a ranges-specifier with more than two overlapping ranges." |
-| 17 | `MAL-URL-BACKSLASH` | Malformed | N/A | Backslash is not a valid URI character. Some servers normalize to `/`. |
-| 18 | `NORM-CASE-TE` | Normalization | N/A | All-uppercase TRANSFER-ENCODING — tests header name case normalization. |
+| 3 | `SMUG-CL-COMMA-TRIPLE` | Smuggling | [RFC 9110 §8.6](https://www.rfc-editor.org/rfc/rfc9110#section-8.6) | Same — three comma-separated identical CL values. Extended merge test. |
+| 4 | `SMUG-CHUNKED-WITH-PARAMS` | Smuggling | [RFC 9112 §7](https://www.rfc-editor.org/rfc/rfc9112#section-7) | "The chunked coding does not define any parameters. Their presence **SHOULD** be treated as an error." |
+| 5 | `SMUG-EXPECT-100-CL` | Smuggling | [RFC 9110 §10.1.1](https://www.rfc-editor.org/rfc/rfc9110#section-10.1.1) | Expect: 100-continue with CL — standard behavior, tested for proxy interaction. |
+| 6 | `SMUG-TRAILER-CL` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Content-Length in trailers — prohibited trailer field. **MUST NOT** be used for framing. |
+| 7 | `SMUG-TRAILER-TE` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Transfer-Encoding in trailers — prohibited trailer field. |
+| 8 | `SMUG-TRAILER-HOST` | Smuggling | [RFC 9110 §6.5.2](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.2) | Host in trailers — must not be used for routing. |
+| 9 | `SMUG-TRAILER-AUTH` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Authorization in trailers — prohibited trailer field. |
+| 10 | `SMUG-TRAILER-CONTENT-TYPE` | Smuggling | [RFC 9110 §6.5.1](https://www.rfc-editor.org/rfc/rfc9110#section-6.5.1) | Content-Type in trailers — prohibited trailer field. |
+| 11 | `SMUG-HEAD-CL-BODY` | Smuggling | [RFC 9110 §9.3.2](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.2) | HEAD with body — server must not leave body on connection. |
+| 12 | `SMUG-OPTIONS-CL-BODY` | Smuggling | [RFC 9110 §9.3.7](https://www.rfc-editor.org/rfc/rfc9110#section-9.3.7) | OPTIONS with body — server should consume or reject body. |
+| 13 | `SMUG-TE-TAB-BEFORE-VALUE` | Smuggling | [RFC 9110 §5.5](https://www.rfc-editor.org/rfc/rfc9110#section-5.5) | Tab as OWS before TE value — valid per `OWS = *( SP / HTAB )`. |
+| 14 | `SMUG-ABSOLUTE-URI-HOST-MISMATCH` | Smuggling | [RFC 9112 §3.2.2](https://www.rfc-editor.org/rfc/rfc9112#section-3.2.2) | Absolute-form URI host differs from Host header — routing confusion vector. |
+| 15 | `COMP-ABSOLUTE-FORM` | Compliance | [RFC 9112 §3.2.2](https://www.rfc-editor.org/rfc/rfc9112#section-3.2.2) | Absolute-form request-target — server **MUST** accept per RFC but many reject. |
+| 16 | `COMP-METHOD-CASE` | Compliance | [RFC 9110 §9.1](https://www.rfc-editor.org/rfc/rfc9110#section-9.1) | Methods are case-sensitive. Lowercase "get" is an unknown method. Server **SHOULD** respond 501. |
+| 17 | `MAL-RANGE-OVERLAPPING` | Malformed | [RFC 9110 §14.2](https://www.rfc-editor.org/rfc/rfc9110#section-14.2) | "A server that supports range requests **MAY** ignore or reject a Range header field that contains... a ranges-specifier with more than two overlapping ranges." |
+| 18 | `MAL-URL-BACKSLASH` | Malformed | N/A | Backslash is not a valid URI character. Some servers normalize to `/`. |
+| 19 | `NORM-CASE-TE` | Normalization | N/A | All-uppercase TRANSFER-ENCODING — tests header name case normalization. |
 
 ---
 
@@ -237,17 +246,17 @@ These tests don't map to a single RFC 2119 keyword but enforce defensive best pr
 
 ## Requirement Level by Suite
 
-### Compliance Suite (57 tests)
+### Compliance Suite (65 tests)
 
 | Level | Tests |
 |-------|-------|
-| MUST | 38 |
-| SHOULD | 10 |
+| MUST | 43 |
+| SHOULD | 13 |
 | MAY | 6 |
 | Unscored | 2 |
 | N/A | 1 |
 
-### Smuggling Suite (60 tests)
+### Smuggling Suite (61 tests)
 
 | Level | Tests |
 |-------|-------|
@@ -255,7 +264,7 @@ These tests don't map to a single RFC 2119 keyword but enforce defensive best pr
 | SHOULD | 9 |
 | MAY | 3 |
 | "ought to" | 1 |
-| Unscored | 13 |
+| Unscored | 14 |
 
 ### Malformed Input Suite (26 tests)
 
@@ -295,13 +304,17 @@ These tests don't map to a single RFC 2119 keyword but enforce defensive best pr
 | RFC 9112 §7.1.2 | 1 | Chunked trailer section |
 | RFC 9112 §9.3-9.6 | 2 | Connection management |
 | RFC 9110 §5.4-5.6 | 7 | Field limits, values, lists, tokens |
+| RFC 9110 §6.6.1 | 1 | Date header |
 | RFC 9110 §7.2 | 1 | Host header semantics |
 | RFC 9110 §7.8 | 4 | Upgrade |
-| RFC 9110 §8.6 | 12 | Content-Length semantics |
-| RFC 9110 §9.1-9.3 | 6 | Methods (GET, HEAD, CONNECT, OPTIONS, TRACE) |
+| RFC 9110 §8.3 | 1 | Content-Type |
+| RFC 9110 §8.6 | 14 | Content-Length semantics |
+| RFC 9110 §9.1-9.3 | 9 | Methods (GET, HEAD, CONNECT, OPTIONS, TRACE) |
 | RFC 9110 §10.1.1 | 2 | Expect header |
 | RFC 9110 §6.5 | 5 | Trailer field restrictions |
 | RFC 9110 §14.2 | 1 | Range requests |
+| RFC 9110 §15.2 | 1 | 1xx status codes |
+| RFC 9110 §15.5.6 | 1 | 405 Method Not Allowed |
 | RFC 6455 | 2 | WebSocket handshake |
 | RFC 6585 | 3 | 431 status code |
 | RFC 3629 | 1 | UTF-8 encoding |

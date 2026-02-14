@@ -23,13 +23,17 @@ internal static class DocsUrlMap
         // content-length
         ["RFC9112-6.1-CL-NON-NUMERIC"] = "content-length/cl-non-numeric",
         ["RFC9112-6.1-CL-PLUS-SIGN"] = "content-length/cl-plus-sign",
+        ["COMP-NO-CL-IN-204"] = "content-length/no-cl-in-204",
 
         // headers
         ["COMP-CONNECTION-CLOSE"] = "headers/connection-close",
+        ["COMP-CONTENT-TYPE"] = "headers/content-type-presence",
+        ["COMP-DATE-HEADER"] = "headers/date-header",
         ["RFC9112-5-EMPTY-HEADER-NAME"] = "headers/empty-header-name",
         ["COMP-EXPECT-UNKNOWN"] = "headers/expect-unknown",
         ["RFC9112-5-HEADER-NO-COLON"] = "headers/header-no-colon",
         ["COMP-HTTP10-DEFAULT-CLOSE"] = "headers/http10-default-close",
+        ["COMP-NO-1XX-HTTP10"] = "headers/no-1xx-http10",
         ["RFC9112-5-INVALID-HEADER-NAME"] = "headers/invalid-header-name",
         ["RFC9112-5.1-OBS-FOLD"] = "headers/obs-fold",
         ["RFC9110-5.6.2-SP-BEFORE-COLON"] = "headers/sp-before-colon",
@@ -51,6 +55,7 @@ internal static class DocsUrlMap
         ["COMP-LEADING-CRLF"] = "line-endings/leading-crlf",
 
         // request-line
+        ["COMP-405-ALLOW"] = "request-line/405-allow",
         ["COMP-ABSOLUTE-FORM"] = "request-line/absolute-form",
         ["COMP-ASTERISK-WITH-GET"] = "request-line/asterisk-with-get",
         ["RFC9112-3.2-FRAGMENT-IN-TARGET"] = "request-line/fragment-in-target",
@@ -58,13 +63,16 @@ internal static class DocsUrlMap
         ["COMP-HTTP12-VERSION"] = "request-line/http12-version",
         ["RFC9112-2.3-INVALID-VERSION"] = "request-line/invalid-version",
         ["COMP-METHOD-CASE"] = "request-line/method-case",
+        ["COMP-HEAD-NO-BODY"] = "request-line/head-no-body",
         ["COMP-METHOD-CONNECT"] = "request-line/method-connect",
         ["COMP-METHOD-TRACE"] = "request-line/method-trace",
         ["RFC9112-3-MISSING-TARGET"] = "request-line/missing-target",
         ["RFC9112-3-MULTI-SP-REQUEST-LINE"] = "request-line/multi-sp-request-line",
+        ["COMP-OPTIONS-ALLOW"] = "request-line/options-allow",
         ["COMP-OPTIONS-STAR"] = "request-line/options-star",
         ["COMP-REQUEST-LINE-TAB"] = "request-line/request-line-tab",
         ["COMP-TRACE-WITH-BODY"] = "request-line/trace-with-body",
+        ["COMP-UNKNOWN-METHOD"] = "request-line/unknown-method",
         ["COMP-UNKNOWN-TE-501"] = "request-line/unknown-te-501",
         ["COMP-VERSION-LEADING-ZEROS"] = "request-line/version-leading-zeros",
         ["COMP-VERSION-MISSING-MINOR"] = "request-line/version-missing-minor",

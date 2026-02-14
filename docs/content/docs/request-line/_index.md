@@ -26,6 +26,10 @@ Note this is a SHOULD, not a MUST. The RFC recommends 400 but does not mandate i
   {{< card link="options-star" title="OPTIONS-STAR" subtitle="OPTIONS * — valid asterisk-form request." >}}
   {{< card link="unknown-te-501" title="UNKNOWN-TE-501" subtitle="Unknown Transfer-Encoding without CL." >}}
   {{< card link="method-connect" title="METHOD-CONNECT" subtitle="CONNECT to an origin server must be rejected." >}}
+  {{< card link="head-no-body" title="HEAD-NO-BODY" subtitle="HEAD response must not contain a message body." >}}
+  {{< card link="unknown-method" title="UNKNOWN-METHOD" subtitle="Unrecognized method should be rejected with 501 or 405." >}}
+  {{< card link="405-allow" title="405-ALLOW" subtitle="405 response must include an Allow header." >}}
+  {{< card link="options-allow" title="OPTIONS-ALLOW" subtitle="OPTIONS response should include Allow header." >}}
 {{< /cards >}}
 
 ### Unscored

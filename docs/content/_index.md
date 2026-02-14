@@ -24,7 +24,7 @@ layout: hextra-home
 
 {{< cards >}}
   {{< card link="probe-results" title="Leaderboard" subtitle="See which frameworks pass the most tests, ranked from best to worst compliance." icon="chart-bar" >}}
-  {{< card link="docs/rfc-requirement-dashboard" title="RFC Requirement Dashboard" subtitle="All 148 tests classified by RFC 2119 level (MUST/SHOULD/MAY)." icon="document-search" >}}
+  {{< card link="docs/rfc-requirement-dashboard" title="RFC Requirement Dashboard" subtitle="Every test classified by RFC 2119 requirement level (MUST/SHOULD/MAY)." icon="document-search" >}}
 {{< /cards >}}
 
 <div style="height:60px"></div>
