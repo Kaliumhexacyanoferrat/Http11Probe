@@ -11,7 +11,6 @@ breadcrumbs: false
 ```dockerfile
 FROM caddy:2
 COPY src/Servers/CaddyServer/Caddyfile /etc/caddy/Caddyfile
-COPY src/Servers/CaddyServer/body.html /srv/body.html
 COPY src/Servers/CaddyServer/echo.html /srv/echo.html
 ```
 
@@ -28,10 +27,7 @@ COPY src/Servers/CaddyServer/echo.html /srv/echo.html
         path /
     }
     handle @post_root {
-        root * /srv
-        templates
-        rewrite * /body.html
-        file_server
+        respond "{http.request.body}" 200
     }
 
     handle /echo {
@@ -45,12 +41,6 @@ COPY src/Servers/CaddyServer/echo.html /srv/echo.html
 
     respond "OK" 200
 }
-```
-
-## Source — `body.html`
-
-```html
-{{- placeholder "http.request.body" -}}
 ```
 
 ## Source — `echo.html`

@@ -8,10 +8,7 @@
         path /
     }
     handle @post_root {
-        root * /srv
-        templates
-        rewrite * /body.html
-        file_server
+        respond "{http.request.body}" 200
     }
 
     handle /echo {
