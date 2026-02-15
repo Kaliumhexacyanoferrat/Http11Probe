@@ -16,47 +16,61 @@ markup:
 menu:
   main:
     - name: Leaderboards
+      identifier: leaderboards
       pageRef: /probe-results
       weight: 1
     - name: Simple Tests
+      identifier: simple-tests
       weight: 2
     - name: Compliance
-      parent: Simple Tests
+      identifier: simple-tests-compliance
+      parent: simple-tests
       pageRef: /compliance
       weight: 1
     - name: Smuggling
-      parent: Simple Tests
+      identifier: simple-tests-smuggling
+      parent: simple-tests
       pageRef: /smuggling
       weight: 2
     - name: Malformed Input
-      parent: Simple Tests
+      identifier: simple-tests-malformed-input
+      parent: simple-tests
       pageRef: /malformed-input
       weight: 3
     - name: Normalization
-      parent: Simple Tests
+      identifier: simple-tests-normalization
+      parent: simple-tests
       pageRef: /normalization
       weight: 4
     - name: Sequence Tests
+      identifier: sequence-tests
+      pageRef: /sequence-tests
       weight: 3
     - name: Smuggling
-      parent: Sequence Tests
+      identifier: sequence-tests-smuggling
+      parent: sequence-tests
       pageRef: /sequence-tests/smuggling
       weight: 1
     - name: Glossary
+      identifier: glossary
       pageRef: /docs
       weight: 4
     - name: Contribute
+      identifier: contribute
       weight: 5
     - name: Add a Framework
-      parent: Contribute
+      identifier: contribute-add-framework
+      parent: contribute
       pageRef: /add-a-framework
       weight: 1
     - name: Add a Test
-      parent: Contribute
+      identifier: contribute-add-test
+      parent: contribute
       pageRef: /add-a-test
       weight: 2
     - name: Add with AI Agent
-      parent: Contribute
+      identifier: contribute-add-with-ai
+      parent: contribute
       pageRef: /add-with-ai-agent
       weight: 3
     - name: Search
