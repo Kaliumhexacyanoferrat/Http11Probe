@@ -1417,5 +1417,442 @@ public static class SmugglingSuite
         };
     }
 
+    // ── Sequence tests ─────────────────────────────────────────────
+
+    public static IEnumerable<SequenceTestCase> GetSequenceTestCases()
+    {
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-CLTE-CONN-CLOSE",
+            Description = "CL+TE conflict — server MUST close connection after responding",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §6.1",
+            Expected = new ExpectedBehavior
+            {
+                Description = "400, or 2xx + close"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "Ambiguous POST (CL+TE)",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n")
+                },
+                new SequenceStep
+                {
+                    Label = "Follow-up GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                // Server rejected the ambiguous request outright
+                if (step1.Response?.StatusCode == 400)
+                    return TestVerdict.Pass;
+
+                // Connection closed before or after step 1 response
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return TestVerdict.Pass;
+
+                // Server returned 2xx — did it close the connection?
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    // Connection closed after step 1 → step 2 didn't execute → correct
+                    if (!step2.Executed)
+                        return TestVerdict.Pass;
+
+                    // Step 2 executed → connection was kept open → MUST-close violated
+                    return TestVerdict.Fail;
+                }
+
+                return TestVerdict.Fail;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return "Rejected ambiguous CL+TE request with 400";
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return "Connection closed — safe";
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return $"Accepted with {step1.Response.StatusCode}, then closed connection (RFC-compliant)";
+                    return $"Accepted with {step1.Response.StatusCode} but kept connection open — follow-up GET returned {step2.Response?.StatusCode.ToString() ?? "no response"}";
+                }
+                return $"Unexpected response: {step1.Response?.StatusCode.ToString() ?? "none"}";
+            }
+        };
+
+        // ── TECL-CONN-CLOSE ─────────────────────────────────────────
+        // Mirror of CLTE-CONN-CLOSE with TE listed before CL.
+        // Some parsers behave differently depending on header order.
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-TECL-CONN-CLOSE",
+            Description = "TE+CL conflict (reversed order) — server MUST close connection after responding",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §6.1",
+            Expected = new ExpectedBehavior
+            {
+                Description = "400, or 2xx + close"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "Ambiguous POST (TE+CL)",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\nContent-Length: 5\r\n\r\n0\r\n\r\n")
+                },
+                new SequenceStep
+                {
+                    Label = "Follow-up GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return TestVerdict.Pass;
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return TestVerdict.Pass;
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                    return !step2.Executed ? TestVerdict.Pass : TestVerdict.Fail;
+                return TestVerdict.Fail;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return "Rejected ambiguous TE+CL request with 400";
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return "Connection closed — safe";
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return $"Accepted with {step1.Response.StatusCode}, then closed connection (RFC-compliant)";
+                    return $"Accepted with {step1.Response.StatusCode} but kept connection open — follow-up GET returned {step2.Response?.StatusCode.ToString() ?? "no response"}";
+                }
+                return $"Unexpected response: {step1.Response?.StatusCode.ToString() ?? "none"}";
+            }
+        };
+
+        // ── CLTE-KEEPALIVE ──────────────────────────────────────────
+        // CL+TE conflict with explicit Connection: keep-alive.
+        // MUST-close overrides the keep-alive request.
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-CLTE-KEEPALIVE",
+            Description = "CL+TE conflict with Connection: keep-alive — MUST-close still applies",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §6.1",
+            Expected = new ExpectedBehavior
+            {
+                Description = "400, or 2xx + close"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "Ambiguous POST (CL+TE+keep-alive)",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nConnection: keep-alive\r\nContent-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n")
+                },
+                new SequenceStep
+                {
+                    Label = "Follow-up GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return TestVerdict.Pass;
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return TestVerdict.Pass;
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                    return !step2.Executed ? TestVerdict.Pass : TestVerdict.Fail;
+                return TestVerdict.Fail;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return "Rejected ambiguous request with 400";
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return "Connection closed — safe (MUST-close honored despite keep-alive)";
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return $"Accepted with {step1.Response.StatusCode}, then closed connection (MUST-close honored despite keep-alive)";
+                    return $"Accepted with {step1.Response.StatusCode} and honored keep-alive — MUST-close violated";
+                }
+                return $"Unexpected response: {step1.Response?.StatusCode.ToString() ?? "none"}";
+            }
+        };
+
+        // ── CLTE-DESYNC ─────────────────────────────────────────────
+        // Classic CL.TE desync: CL declares a small body (6 bytes),
+        // but the chunked stream includes extra data after CL's boundary.
+        // If the server uses CL, the leftover bytes stay on the wire
+        // and get interpreted as the start of the next request.
+        //
+        // Wire bytes (step 1):
+        //   POST / HTTP/1.1\r\n
+        //   Host: ...\r\n
+        //   Content-Length: 6\r\n          ← CL says 6 bytes of body
+        //   Transfer-Encoding: chunked\r\n
+        //   \r\n
+        //   0\r\n\r\nX                     ← TE sees terminator at byte 5; CL reads 6 bytes (includes 'X')
+        //
+        // If server uses TE: reads "0\r\n\r\n" (5 bytes), body done, 'X' is leftover.
+        // If server uses CL: reads 6 bytes "0\r\n\r\nX", body done.
+        // Either way, 'X' may poison the connection. Step 2 (GET) follows.
+        // If 'X' merged with step 2's GET, the server sees "XGET / HTTP/1.1" → 400.
+        // A safe server rejects step 1 with 400 or closes the connection.
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-CLTE-DESYNC",
+            Description = "CL.TE desync — leftover bytes after CL boundary may become a smuggled request",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §6.1",
+            Expected = new ExpectedBehavior
+            {
+                Description = "400, or close"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "Poison POST (CL=6, TE=chunked, extra byte)",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nContent-Length: 6\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\nX")
+                },
+                new SequenceStep
+                {
+                    Label = "Follow-up GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                // Rejected the ambiguous request outright — safe
+                if (step1.Response?.StatusCode == 400)
+                    return TestVerdict.Pass;
+
+                // Connection closed — safe
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return TestVerdict.Pass;
+
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    // Server accepted but closed connection — safe
+                    if (!step2.Executed)
+                        return TestVerdict.Pass;
+
+                    // Step 2 executed. If server got a clean 2xx, it consumed our
+                    // GET correctly despite the poison byte — still a MUST-close violation
+                    // but not a desync. If step 2 got 400, the poison byte merged
+                    // with the GET ("XGET /...") — desync detected.
+                    if (step2.Response?.StatusCode == 400)
+                        return TestVerdict.Fail; // Desync confirmed
+
+                    // Connection stayed open, step 2 got 2xx — MUST-close violated
+                    return TestVerdict.Fail;
+                }
+
+                return TestVerdict.Fail;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return "Rejected ambiguous CL+TE request with 400";
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return "Connection closed — safe";
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return $"Accepted with {step1.Response.StatusCode}, then closed connection — no desync";
+                    if (step2.Response?.StatusCode == 400)
+                        return $"DESYNC: Server accepted step 1 ({step1.Response.StatusCode}), but poison byte merged with follow-up GET → 400";
+                    return $"Accepted with {step1.Response.StatusCode}, kept connection open — follow-up GET returned {step2.Response?.StatusCode.ToString() ?? "no response"}";
+                }
+                return $"Unexpected response: {step1.Response?.StatusCode.ToString() ?? "none"}";
+            }
+        };
+
+        // ── TECL-DESYNC ─────────────────────────────────────────────
+        // Reverse desync: TE terminates early (0\r\n\r\n), but CL claims a
+        // larger body. If the server uses TE, it stops at the terminator
+        // and the remaining CL bytes (which include a smuggled prefix)
+        // stay on the wire.
+        //
+        // Wire bytes (step 1):
+        //   POST / HTTP/1.1\r\n
+        //   Host: ...\r\n
+        //   Transfer-Encoding: chunked\r\n
+        //   Content-Length: 30\r\n          ← CL says 30 bytes of body
+        //   \r\n
+        //   0\r\n\r\nX                      ← TE ends at byte 5; CL expects 25 more
+        //
+        // A safe server rejects step 1 with 400 or closes the connection.
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-TECL-DESYNC",
+            Description = "TE.CL desync — chunked terminator before CL boundary, leftover bytes smuggled",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §6.1",
+            Expected = new ExpectedBehavior
+            {
+                Description = "400, or close"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "Poison POST (TE terminates early, CL=30)",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"POST / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\nTransfer-Encoding: chunked\r\nContent-Length: 30\r\n\r\n0\r\n\r\nX")
+                },
+                new SequenceStep
+                {
+                    Label = "Follow-up GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return TestVerdict.Pass;
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return TestVerdict.Pass;
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return TestVerdict.Pass;
+                    if (step2.Response?.StatusCode == 400)
+                        return TestVerdict.Fail; // Desync confirmed
+                    return TestVerdict.Fail; // MUST-close violated
+                }
+                return TestVerdict.Fail;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode == 400)
+                    return "Rejected ambiguous TE+CL request with 400";
+                if (!step1.Executed || step1.ConnectionState == ConnectionState.ClosedByServer)
+                    return "Connection closed — safe";
+                if (step1.Response?.StatusCode is >= 200 and < 300)
+                {
+                    if (!step2.Executed)
+                        return $"Accepted with {step1.Response.StatusCode}, then closed connection — no desync";
+                    if (step2.Response?.StatusCode == 400)
+                        return $"DESYNC: Server accepted step 1 ({step1.Response.StatusCode}), but poison byte merged with follow-up GET → 400";
+                    return $"Accepted with {step1.Response.StatusCode}, kept connection open — follow-up GET returned {step2.Response?.StatusCode.ToString() ?? "no response"}";
+                }
+                return $"Unexpected response: {step1.Response?.StatusCode.ToString() ?? "none"}";
+            }
+        };
+
+        // ── PIPELINE-SAFE ───────────────────────────────────────────
+        // Baseline: two clean, unambiguous GET requests on one connection.
+        // Validates that the server supports normal HTTP/1.1 pipelining.
+        // If this fails, all other sequence tests are unreliable.
+        yield return new SequenceTestCase
+        {
+            Id = "SMUG-PIPELINE-SAFE",
+            Description = "Baseline — two clean GET requests on one keep-alive connection",
+            Category = TestCategory.Smuggling,
+            RfcReference = "RFC 9112 §9.3",
+            Scored = false,
+            RfcLevel = RfcLevel.Should,
+            Expected = new ExpectedBehavior
+            {
+                Description = "2xx + 2xx"
+            },
+            Steps =
+            [
+                new SequenceStep
+                {
+                    Label = "First GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                },
+                new SequenceStep
+                {
+                    Label = "Second GET",
+                    PayloadFactory = ctx => MakeRequest(
+                        $"GET / HTTP/1.1\r\nHost: {ctx.HostHeader}\r\n\r\n")
+                }
+            ],
+            Validator = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                // Step 1 must succeed
+                if (step1.Response?.StatusCode is not (>= 200 and < 300))
+                    return TestVerdict.Fail;
+
+                // Connection closed after step 1 — server doesn't support pipelining
+                if (!step2.Executed)
+                    return TestVerdict.Warn;
+
+                // Both steps got 2xx — pipelining works
+                if (step2.Response?.StatusCode is >= 200 and < 300)
+                    return TestVerdict.Pass;
+
+                return TestVerdict.Warn;
+            },
+            BehavioralAnalyzer = steps =>
+            {
+                var step1 = steps[0];
+                var step2 = steps[1];
+
+                if (step1.Response?.StatusCode is not (>= 200 and < 300))
+                    return $"First GET failed with {step1.Response?.StatusCode.ToString() ?? "no response"}";
+                if (!step2.Executed)
+                    return $"First GET returned {step1.Response.StatusCode}, but server closed connection — no pipelining support";
+                if (step2.Response?.StatusCode is >= 200 and < 300)
+                    return $"Both GETs returned {step1.Response.StatusCode}/{step2.Response.StatusCode} — pipelining works";
+                return $"First GET: {step1.Response.StatusCode}, second GET: {step2.Response?.StatusCode.ToString() ?? "no response"}";
+            }
+        };
+    }
+
     private static byte[] MakeRequest(string request) => Encoding.ASCII.GetBytes(request);
 }

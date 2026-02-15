@@ -58,11 +58,12 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
             : null
     };
 
-    var testCases = ComplianceSuite.GetTestCases()
-        .Concat(SmugglingSuite.GetTestCases())
-        .Concat(MalformedInputSuite.GetTestCases())
-        .Concat(NormalizationSuite.GetTestCases())
-        .ToList();
+    var testCases = new List<ITestCase>();
+    testCases.AddRange(ComplianceSuite.GetTestCases());
+    testCases.AddRange(SmugglingSuite.GetTestCases());
+    testCases.AddRange(SmugglingSuite.GetSequenceTestCases());
+    testCases.AddRange(MalformedInputSuite.GetTestCases());
+    testCases.AddRange(NormalizationSuite.GetTestCases());
 
     var runner = new TestRunner(options);
 

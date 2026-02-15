@@ -15,7 +15,7 @@ public sealed class TestRunner
         _options = options;
     }
 
-    public async Task<TestRunReport> RunAsync(IEnumerable<TestCase> testCases, Action<TestResult>? onResult = null)
+    public async Task<TestRunReport> RunAsync(IEnumerable<ITestCase> testCases, Action<TestResult>? onResult = null)
     {
         var results = new List<TestResult>();
         var totalSw = Stopwatch.StartNew();
@@ -42,7 +42,12 @@ public sealed class TestRunner
                 continue;
             }
 
-            var result = await RunSingleAsync(testCase, context);
+            var result = testCase switch
+            {
+                SequenceTestCase seq => await RunSequenceAsync(seq, context),
+                TestCase single => await RunSingleAsync(single, context),
+                _ => throw new InvalidOperationException($"Unknown test case type: {testCase.GetType().Name}")
+            };
             results.Add(result);
             onResult?.Invoke(result);
         }
@@ -117,6 +122,135 @@ public sealed class TestRunner
             return new TestResult
             {
                 TestCase = testCase,
+                Verdict = TestVerdict.Error,
+                ConnectionState = ConnectionState.Error,
+                ErrorMessage = ex.Message,
+                Duration = sw.Elapsed
+            };
+        }
+    }
+
+    private async Task<TestResult> RunSequenceAsync(SequenceTestCase seq, TestContext context)
+    {
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            await using var client = new RawTcpClient(_options.ConnectTimeout, _options.ReadTimeout);
+            var connectState = await client.ConnectAsync(_options.Host, _options.Port);
+
+            if (connectState != ConnectionState.Open)
+            {
+                return new TestResult
+                {
+                    TestCase = seq,
+                    Verdict = TestVerdict.Error,
+                    ConnectionState = connectState,
+                    ErrorMessage = $"Failed to connect: {connectState}",
+                    Duration = sw.Elapsed
+                };
+            }
+
+            var stepResults = new List<StepResult>();
+            var rawRequestParts = new List<string>();
+            HttpResponse? lastResponse = null;
+            var connectionState = ConnectionState.Open;
+            var drainCaughtData = false;
+
+            for (var i = 0; i < seq.Steps.Count; i++)
+            {
+                var step = seq.Steps[i];
+                var label = step.Label ?? $"Step {i + 1}";
+
+                if (connectionState != ConnectionState.Open)
+                {
+                    stepResults.Add(new StepResult
+                    {
+                        Label = label,
+                        Executed = false,
+                        ConnectionState = connectionState
+                    });
+                    rawRequestParts.Add($"── {label} ──\n[Not executed — connection closed]");
+                    continue;
+                }
+
+                var payload = step.PayloadFactory(context);
+                var rawReq = payload.Length > 8192
+                    ? Encoding.ASCII.GetString(payload, 0, 8192) + "\n\n[Truncated]"
+                    : Encoding.ASCII.GetString(payload);
+                rawRequestParts.Add($"── {label} ──\n{rawReq}");
+
+                await client.SendAsync(payload);
+
+                var (data, length, readState, drain) = await client.ReadResponseAsync();
+                var response = ResponseParser.TryParse(data.AsSpan(), length);
+                if (response is not null) lastResponse = response;
+                connectionState = readState;
+                if (drain) drainCaughtData = true;
+
+                if (connectionState == ConnectionState.Open)
+                {
+                    await Task.Delay(50);
+                    connectionState = client.CheckConnectionState();
+                }
+
+                stepResults.Add(new StepResult
+                {
+                    Label = label,
+                    Executed = true,
+                    Response = response,
+                    ConnectionState = connectionState,
+                    RawRequest = rawReq
+                });
+            }
+
+            var verdict = seq.Validator(stepResults);
+            var behavioralNote = seq.BehavioralAnalyzer?.Invoke(stepResults);
+
+            // Build combined raw response for display
+            var rawResponseParts = new List<string>();
+            foreach (var sr in stepResults)
+            {
+                if (!sr.Executed)
+                    rawResponseParts.Add($"── {sr.Label} ──\n[Not executed — connection closed]");
+                else if (sr.Response is not null)
+                    rawResponseParts.Add($"── {sr.Label} ──\n{sr.Response.RawResponse}");
+                else
+                    rawResponseParts.Add($"── {sr.Label} ──\n[No response]");
+            }
+
+            // Synthetic response with combined raw output for the UI
+            HttpResponse? resultResponse = null;
+            if (lastResponse is not null)
+            {
+                resultResponse = new HttpResponse
+                {
+                    StatusCode = lastResponse.StatusCode,
+                    ReasonPhrase = lastResponse.ReasonPhrase,
+                    HttpVersion = lastResponse.HttpVersion,
+                    Headers = lastResponse.Headers,
+                    Body = lastResponse.Body,
+                    RawResponse = string.Join("\n\n", rawResponseParts)
+                };
+            }
+
+            return new TestResult
+            {
+                TestCase = seq,
+                Verdict = verdict,
+                Response = resultResponse,
+                ConnectionState = connectionState,
+                BehavioralNote = behavioralNote,
+                RawRequest = string.Join("\n\n", rawRequestParts),
+                DrainCaughtData = drainCaughtData,
+                Duration = sw.Elapsed
+            };
+        }
+        catch (Exception ex)
+        {
+            return new TestResult
+            {
+                TestCase = seq,
                 Verdict = TestVerdict.Error,
                 ConnectionState = ConnectionState.Error,
                 ErrorMessage = ex.Message,

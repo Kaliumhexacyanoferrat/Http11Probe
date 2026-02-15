@@ -78,7 +78,11 @@ internal static class DocsUrlMap
         ["COMP-VERSION-MISSING-MINOR"] = "request-line/version-missing-minor",
         ["COMP-VERSION-WHITESPACE"] = "request-line/version-whitespace",
 
+        // range
+        ["COMP-RANGE-POST"] = "body/range-post",
+
         // upgrade
+        ["COMP-UPGRADE-HTTP10"] = "upgrade/upgrade-http10",
         ["COMP-UPGRADE-INVALID-VER"] = "upgrade/upgrade-invalid-ver",
         ["COMP-UPGRADE-MISSING-CONN"] = "upgrade/upgrade-missing-conn",
         ["COMP-UPGRADE-POST"] = "upgrade/upgrade-post",

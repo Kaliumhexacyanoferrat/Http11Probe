@@ -38,8 +38,9 @@ menu:
       weight: 4
     - name: Sequence Tests
       weight: 3
-    - name: Coming Soon
+    - name: Smuggling
       parent: Sequence Tests
+      pageRef: /smuggling
       weight: 1
     - name: Glossary
       pageRef: /docs
