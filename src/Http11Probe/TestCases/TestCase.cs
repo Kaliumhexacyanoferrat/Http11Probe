@@ -2,7 +2,7 @@ using Http11Probe.Response;
 
 namespace Http11Probe.TestCases;
 
-public sealed class TestCase
+public sealed class TestCase : ITestCase
 {
     public required string Id { get; init; }
     

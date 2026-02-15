@@ -5,7 +5,7 @@ namespace Http11Probe.TestCases;
 
 public sealed class TestResult
 {
-    public required TestCase TestCase { get; init; }
+    public required ITestCase TestCase { get; init; }
     
     public required TestVerdict Verdict { get; init; }
     

@@ -38,7 +38,8 @@ Some tests are **unscored** (marked with `*`). These send payloads where the RFC
   }
   var GROUPS = [
     { key: 'framing', label: 'Framing Conflicts', testIds: [
-      'SMUG-CL-TE-BOTH','SMUG-CLTE-PIPELINE','SMUG-TECL-PIPELINE','SMUG-TE-HTTP10',
+      'SMUG-CL-TE-BOTH','SMUG-CLTE-CONN-CLOSE','SMUG-TECL-CONN-CLOSE','SMUG-CLTE-KEEPALIVE',
+      'SMUG-CLTE-PIPELINE','SMUG-TECL-PIPELINE','SMUG-TE-HTTP10',
       'SMUG-DUPLICATE-CL','SMUG-CL-LEADING-ZEROS','SMUG-CL-NEGATIVE',
       'SMUG-CL-COMMA-DIFFERENT','SMUG-CL-OCTAL','SMUG-CL-HEX-PREFIX',
       'SMUG-CL-INTERNAL-SPACE','SMUG-CL-COMMA-SAME',
@@ -59,6 +60,9 @@ Some tests are **unscored** (marked with `*`). These send payloads where the RFC
       'SMUG-CHUNK-EXT-LF','SMUG-CHUNK-SPILL','SMUG-CHUNK-LF-TERM',
       'SMUG-CHUNK-EXT-CTRL','SMUG-CHUNK-EXT-CR','SMUG-CHUNK-LF-TRAILER',
       'SMUG-CHUNK-NEGATIVE','SMUG-CHUNK-BARE-CR-TERM'
+    ]},
+    { key: 'desync', label: 'Desync Detection', testIds: [
+      'SMUG-CLTE-DESYNC','SMUG-TECL-DESYNC','SMUG-PIPELINE-SAFE'
     ]},
     { key: 'headers-trailers', label: 'Headers, Trailers & Methods', testIds: [
       'SMUG-BARE-CR-HEADER-VALUE',
