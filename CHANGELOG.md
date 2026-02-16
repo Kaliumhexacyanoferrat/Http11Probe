@@ -4,6 +4,9 @@ All notable changes to Http11Probe are documented in this file.
 
 ## [2026-02-16]
 
+### Removed
+- **Watson server** — removed from the test suite
+
 ### Added
 - **Baseline test gate** — probe workflow now fails when a server can't pass `COMP-BASELINE` or `COMP-POST-CL-BODY`, blocking merge; PR comment shows prominent pass/fail status and is posted even on failure (#98)
 - **4 caching tests** — `CAP-IMS-FUTURE` (If-Modified-Since with future date), `CAP-IMS-INVALID` (invalid IMS value), `CAP-INM-UNQUOTED` (unquoted ETag in If-None-Match), `CAP-ETAG-WEAK` (weak ETag validation) (#94)

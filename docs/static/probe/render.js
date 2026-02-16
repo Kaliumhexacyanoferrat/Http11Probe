@@ -520,8 +520,7 @@ window.ProbeRender = (function () {
     'Spring Boot': '/Http11Probe/servers/spring-boot/',
     'Tomcat': '/Http11Probe/servers/tomcat/',
     'Traefik': '/Http11Probe/servers/traefik/',
-    'Uvicorn': '/Http11Probe/servers/uvicorn/',
-    'Watson': '/Http11Probe/servers/watson/'
+    'Uvicorn': '/Http11Probe/servers/uvicorn/'
   };
   function serverUrl(name) { return SERVER_URLS[name] || ''; }
 

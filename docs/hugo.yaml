@@ -51,6 +51,11 @@ menu:
       parent: sequence-tests
       pageRef: /sequence-tests/smuggling
       weight: 1
+    - name: Capabilities
+      identifier: sequence-tests-capabilities
+      parent: sequence-tests
+      pageRef: /sequence-tests/capabilities
+      weight: 2
     - name: Glossary
       identifier: glossary
       pageRef: /docs
