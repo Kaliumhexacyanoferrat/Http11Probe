@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      pull-requests: write
       contents: write
       actions: write
 
@@ -284,19 +283,18 @@ jobs:
         name: probe-results
         path: probe-*.json
 
-    - name: Comment on PR
+    - name: Save PR metadata
       if: github.event_name == 'pull_request' && steps.changes.outputs.servers != '[]'
-      run: |
-        COMMENT_ID=$(gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-          --jq '.[] | select(.body | contains("<!-- http11probe-results -->")) | .id' | head -1)
-        if [ -n "$COMMENT_ID" ]; then
-          gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID \
-            -X PATCH -f body="$(cat probe-comment.md)"
-        else
-          gh pr comment ${{ github.event.number }} --body-file probe-comment.md
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: echo '${{ github.event.number }}' > pr-number.txt
+
+    - name: Upload PR comment
+      if: github.event_name == 'pull_request' && steps.changes.outputs.servers != '[]'
+      uses: actions/upload-artifact@v4
+      with:
+        name: probe-pr-comment
+        path: |
+          probe-comment.md
+          pr-number.txt
 
     - name: Push to latest-results
       if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
